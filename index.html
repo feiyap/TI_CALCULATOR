@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>无限恐怖 · 角色加值计算器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <small>Infinite Horror 2.5R V108</small>
+      <h1>角色加值计算器</h1>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="btn-new">新建空白</button>
+      <div class="preset-bar">
+        <select id="preset-select" title="presets 文件夹中的预设"></select>
+        <button class="btn primary" id="btn-preset-save">保存预设</button>
+        <button class="btn" id="btn-preset-load">读取预设</button>
+        <button class="btn danger" id="btn-preset-delete">删除预设</button>
+      </div>
+      <button class="btn" id="btn-export">导出 JSON</button>
+      <button class="btn" id="btn-import">导入 JSON</button>
+      <input type="file" id="file-import" accept="application/json" class="hidden">
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="info">概念</button>
+        <button class="tab" data-tab="white">白卡</button>
+        <button class="tab" data-tab="entries">条目与加值</button>
+        <button class="tab" data-tab="checks">检定</button>
+        <button class="tab" data-tab="attacks">攻击预设</button>
+      </div>
+
+      <div id="pane-info" class="panel-body hidden">
+        <div class="grid-2">
+          <div class="field"><label>玩家</label><input id="info-player"></div>
+          <div class="field"><label>姓名</label><input id="info-name"></div>
+          <div class="field"><label>性别</label><input id="info-gender"></div>
+          <div class="field"><label>年龄</label><input id="info-age"></div>
+          <div class="field"><label>身高/体重</label><input id="info-height"></div>
+          <div class="field"><label>种族/国籍</label><input id="info-race"></div>
+        </div>
+        <div class="field"><label>语言</label><input id="info-language"></div>
+        <div class="field"><label>外貌</label><textarea id="info-appearance"></textarea></div>
+        <div class="field"><label>性格</label><textarea id="info-personality"></textarea></div>
+        <div class="field"><label>概述</label><textarea id="info-summary"></textarea></div>
+        <div class="field"><label>美德</label><textarea id="info-virtue"></textarea></div>
+        <div class="field"><label>恶德</label><textarea id="info-vice"></textarea></div>
+
+        <div class="power-box">
+          <div class="section-title">战力计算器（ST指南）</div>
+          <p class="muted">只计 ST 发放且当前正在使用的资源。理财、造人额外 XP/分数不计。建卡角色另有 1 点初始战斗力。</p>
+          <div class="power-counts">
+            <div class="field"><label>D</label><input type="number" id="power-d" min="0" value="0"></div>
+            <div class="field"><label>C</label><input type="number" id="power-c" min="0" value="0"></div>
+            <div class="field"><label>B</label><input type="number" id="power-b" min="0" value="0"></div>
+            <div class="field"><label>A</label><input type="number" id="power-a" min="0" value="0"></div>
+            <div class="field"><label>S</label><input type="number" id="power-s" min="0" value="0"></div>
+            <div class="field"><label>SS</label><input type="number" id="power-ss" min="0" value="0"></div>
+          </div>
+          <div class="grid-2" style="margin-top:8px">
+            <div class="field"><label>分数</label><input type="number" id="power-points" value="0"></div>
+            <div class="field"><label>经验 XP</label><input type="number" id="power-xp" value="0"></div>
+          </div>
+          <div id="power-result" class="power-result"></div>
+        </div>
+      </div>
+
+      <div id="pane-white" class="panel-body">
+        <div class="section-title">九属性（白卡基础值）</div>
+        <div id="attr-grid" class="attr-grid"></div>
+        <div class="field" style="max-width:160px;margin-top:10px">
+          <label>体积</label>
+          <input type="number" id="white-volume" min="1" max="40" value="5">
+        </div>
+        <div class="section-title">生理技能</div>
+        <div id="skills-phy"></div>
+        <div class="section-title">心智技能</div>
+        <div id="skills-men"></div>
+        <div class="section-title">互动技能</div>
+        <div id="skills-soc"></div>
+        <div class="section-title">子项技能（手艺 / 表达）</div>
+        <div id="subskills"></div>
+        <div class="row-actions"><button class="btn" id="btn-add-sub">添加子项</button></div>
+      </div>
+
+      <div id="pane-entries" class="panel-body hidden">
+        <p class="muted">每个条目可写多条加值。加值类型决定能否叠加：同类型默认取高；「增加/提升」累加；完美、表演、闪避恒叠加。血统/改造/瞳术默认内在，能力组/技艺默认修行。判定 DP 的作用对象可按住 Ctrl 多选。</p>
+        <div class="row-actions"><button class="btn primary" id="btn-add-entry">添加条目</button></div>
+        <div id="entry-list"></div>
+      </div>
+
+      <div id="pane-checks" class="panel-body hidden">
+        <p class="muted">内置检定为意志、三豁免与侦查。聆听、潜行、交涉等请自行添加。无对应专业时技能级数减半。</p>
+        <div class="row-actions"><button class="btn primary" id="btn-add-check">添加检定</button></div>
+        <div id="check-list"></div>
+      </div>
+
+      <div id="pane-attacks" class="panel-body hidden">
+        <p class="muted">攻击预设使用关键属性 + 关键技能 + 武器伤害。伤害上限按《常用动作》：肉搏/白刃/投掷为伤害+技能+力量；弓箭为伤害×2+运动+力量需求/体积较高者；枪械与炮为伤害×2+枪械。</p>
+        <div class="row-actions"><button class="btn primary" id="btn-add-attack">添加攻击预设</button></div>
+        <div id="attack-list"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 id="sheet-title">结算总览</h2>
+      <div class="panel-body">
+        <div id="cond-bar" class="cond-bar"></div>
+        <div class="sheet-block">
+          <h3>属性</h3>
+          <div id="sheet-attrs" class="stat-cards"></div>
+        </div>
+        <div class="sheet-block">
+          <h3>技能</h3>
+          <div id="sheet-skills"></div>
+        </div>
+        <div class="sheet-block">
+          <h3>衍生属性</h3>
+          <div id="sheet-derived"></div>
+        </div>
+        <div class="sheet-block">
+          <h3>检定速查</h3>
+          <div id="sheet-checks" class="stat-cards"></div>
+        </div>
+        <div class="sheet-block">
+          <h3>攻击预设</h3>
+          <div id="sheet-attacks"></div>
+        </div>
+        <div class="sheet-block">
+          <h3>防御预设</h3>
+          <div id="sheet-defense"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <p class="footer-note">
+    V1：按《本质与加值类型》叠算属性加值与判定 DP（二者视为不同类，可同名叠加）。同一判定上的同类型 DP 取高（增加/提升除外）。
+    内在/修行在属性上按同一强化树累加、不同树取高。资源/专长附加成功彼此不叠加，传奇与技能阈值附加成功可叠加。
+    预设保存在本目录下的 presets 文件夹。请用「启动计算器.bat」打开页面，保存才会写入该文件夹。
+  </p>
+
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
