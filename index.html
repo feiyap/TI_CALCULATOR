@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>无限恐怖 · 角色加值计算器</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
   <header class="app-header">
@@ -32,6 +32,7 @@
         <button class="tab active" data-tab="info">概念</button>
         <button class="tab" data-tab="white">白卡</button>
         <button class="tab" data-tab="entries">条目与加值</button>
+        <button class="tab" data-tab="energy" type="button">能量池</button>
         <button class="tab" data-tab="checks">检定</button>
         <button class="tab" data-tab="attacks">攻击预设</button>
       </div>
@@ -90,9 +91,15 @@
       </div>
 
       <div id="pane-entries" class="panel-body hidden">
-        <p class="muted">每个条目可写多条加值。加值类型决定能否叠加：同类型默认取高；「增加/提升」累加；完美、表演、闪避恒叠加。血统/改造/瞳术默认内在，能力组/技艺默认修行。判定 DP 的作用对象可按住 Ctrl 多选。</p>
+        <p class="muted">每个条目可写多条加值。加值类型决定能否叠加：同类型默认取高；「增加/提升」累加；完美、表演、闪避恒叠加。血统/改造/瞳术默认内在，能力组/技艺默认修行。判定 DP 的作用对象可按住 Ctrl 多选。数值可选「变量」，例如神子：防御神圣加值 = 风度，上限为条目等级×3。条目等级：D/C/B/A/S 按 1/3/9/27/81 换算。</p>
         <div class="row-actions"><button class="btn primary" id="btn-add-entry">添加条目</button></div>
         <div id="entry-list"></div>
+      </div>
+
+      <div id="pane-energy" class="panel-body hidden">
+        <p class="muted">按《能量池》《能量池强化》《灵力》《魔力》《衍生属性段》。通用能量每多一个开启来源上限 +5。能量池强化上限累加，回复速度取该级（D 每小时 1 / C 每 30 分钟 1 / B 每 15 分钟 1 / A 每 15 分钟 2）。</p>
+        <div class="row-actions"><button type="button" class="btn primary" id="btn-add-pool">添加能量池</button></div>
+        <div id="pool-list"></div>
       </div>
 
       <div id="pane-checks" class="panel-body hidden">
@@ -125,6 +132,10 @@
           <div id="sheet-derived"></div>
         </div>
         <div class="sheet-block">
+          <h3>能量池</h3>
+          <div id="sheet-energy"></div>
+        </div>
+        <div class="sheet-block">
           <h3>检定速查</h3>
           <div id="sheet-checks" class="stat-cards"></div>
         </div>
@@ -141,12 +152,12 @@
   </div>
 
   <p class="footer-note">
-    V1：按《本质与加值类型》叠算属性加值与判定 DP（二者视为不同类，可同名叠加）。同一判定上的同类型 DP 取高（增加/提升除外）。
+    V2：属性加值与判定 DP 分列叠算。条目可写「取代判定属性」与「变量加值」（如神子：风度，上限条目等级×3）。表达/手艺子项可直接选入检定。能量池按模板计算上限与回复。
     内在/修行在属性上按同一强化树累加、不同树取高。资源/专长附加成功彼此不叠加，传奇与技能阈值附加成功可叠加。
     预设保存在本目录下的 presets 文件夹。请用「启动计算器.bat」打开页面，保存才会写入该文件夹。
   </p>
 
-  <script src="js/engine.js"></script>
-  <script src="js/ui.js"></script>
+  <script src="js/engine.js?v=3"></script>
+  <script src="js/ui.js?v=3"></script>
 </body>
 </html>

@@ -65,6 +65,11 @@ class Handler(SimpleHTTPRequestHandler):
         body = self.rfile.read(n) if n else b"{}"
         return json.loads(body.decode("utf-8"))
 
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        SimpleHTTPRequestHandler.end_headers(self)
+
     def do_GET(self):
         path = unquote(self.path.split("?", 1)[0])
         if path.rstrip("/") == "/api/presets":

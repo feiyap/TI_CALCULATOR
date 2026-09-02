@@ -1,0 +1,805 @@
+{
+  "name": "南莉央 第二场",
+  "savedAt": "2026-09-02T17:42:24",
+  "character": {
+    "version": 1,
+    "info": {
+      "player": "绯夜氏",
+      "name": "南莉央 第二场",
+      "gender": "女",
+      "age": "18",
+      "height": "166cm/51kg",
+      "race": "人类/日本",
+      "language": "日语",
+      "appearance": "白发金瞳的女高中生。",
+      "personality": "面无表情、冰冷的样子，实际是有点腼腆的高中生，喜欢可爱的东西。",
+      "summary": "因父母职业经常转学。高中加入弓道部，兴趣扩展到弓箭。高中最后一次射箭比赛中失踪。",
+      "virtue": "希望（Hope）：令他人从绝望中回复时，回复全部意志力。",
+      "vice": "骄傲（Pride）：为表现自己的想法而冒险时，回复 1 点意志力。"
+    },
+    "white": {
+      "attrs": {
+        "力量": 3,
+        "敏捷": 3,
+        "耐力": 3,
+        "智力": 2,
+        "感知": 3,
+        "决心": 4,
+        "风度": 4,
+        "操控": 2,
+        "沉着": 2
+      },
+      "skills": {
+        "运动": {
+          "rank": 5,
+          "professions": [
+            "弓箭攻击",
+            "自我保护",
+            "逃脱",
+            "部位攻击"
+          ]
+        },
+        "肉搏": {
+          "rank": 0,
+          "professions": []
+        },
+        "驾驶": {
+          "rank": 0,
+          "professions": []
+        },
+        "枪械": {
+          "rank": 0,
+          "professions": []
+        },
+        "手上功夫": {
+          "rank": 0,
+          "professions": []
+        },
+        "躲藏": {
+          "rank": 1,
+          "professions": []
+        },
+        "求生": {
+          "rank": 2,
+          "professions": [
+            "自我保护"
+          ]
+        },
+        "白刃": {
+          "rank": 0,
+          "professions": []
+        },
+        "学识": {
+          "rank": 1,
+          "professions": []
+        },
+        "电脑": {
+          "rank": 0,
+          "professions": []
+        },
+        "调查": {
+          "rank": 2,
+          "professions": [
+            "侦察"
+          ]
+        },
+        "医学": {
+          "rank": 1,
+          "professions": []
+        },
+        "神秘学": {
+          "rank": 0,
+          "professions": []
+        },
+        "科学": {
+          "rank": 1,
+          "professions": []
+        },
+        "动物沟通": {
+          "rank": 0,
+          "professions": []
+        },
+        "感受": {
+          "rank": 1,
+          "professions": []
+        },
+        "胁迫": {
+          "rank": 0,
+          "professions": []
+        },
+        "交际": {
+          "rank": 2,
+          "professions": [
+            "交涉"
+          ]
+        },
+        "掩饰": {
+          "rank": 0,
+          "professions": []
+        }
+      },
+      "subskills": [
+        {
+          "parent": "表达",
+          "name": "神乐",
+          "rank": 3,
+          "professions": []
+        }
+      ],
+      "volume": 5
+    },
+    "checks": [
+      {
+        "id": "chk_listen",
+        "enabled": true,
+        "name": "聆听",
+        "attr": "感知",
+        "attr2": "",
+        "skill": "调查",
+        "profession": "聆听",
+        "contest": "竞争"
+      },
+      {
+        "id": "chk_stealth",
+        "enabled": true,
+        "name": "潜行",
+        "attr": "敏捷",
+        "attr2": "",
+        "skill": "躲藏",
+        "profession": "潜行",
+        "contest": "对抗"
+      },
+      {
+        "id": "chk_eund5pbe",
+        "enabled": true,
+        "name": "八乙女之舞",
+        "attr": "风度",
+        "attr2": "",
+        "skill": "交际",
+        "profession": "神乐",
+        "contest": "竞争"
+      }
+    ],
+    "entries": [
+      {
+        "id": "e_id",
+        "category": "专长",
+        "name": "特殊身份",
+        "rank": "3",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "额外专业与技能提升已写入白卡技能段。携带物品：长弓、箭、轻型防弹衣等。",
+        "bonuses": []
+      },
+      {
+        "id": "e_luck",
+        "category": "专长",
+        "name": "幸运星",
+        "rank": "3",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "1 级：机运骰 +1。2 级：每场景一次重投（非自然骰）。3 级：所有判定和防御 +2 幸运。",
+        "bonuses": [
+          {
+            "id": "b1",
+            "enabled": true,
+            "type": "幸运",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 2,
+            "applies": [
+              "allChecks"
+            ],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "所有判定",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          },
+          {
+            "id": "b2",
+            "enabled": true,
+            "type": "幸运",
+            "kind": "defense",
+            "stackMode": "obtain",
+            "value": 2,
+            "applies": [
+              "defense"
+            ],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "防御",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      },
+      {
+        "id": "e_light",
+        "category": "专长",
+        "name": "轻灵战士",
+        "rank": "1",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "需求敏捷 3、感知 3。须着轻甲或不着甲。1 级：运动技能相关检定 +3 专长。",
+        "bonuses": [
+          {
+            "id": "b3",
+            "enabled": true,
+            "type": "专长",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 3,
+            "applies": [
+              "skill:运动"
+            ],
+            "attr": "",
+            "skill": "运动",
+            "derived": "",
+            "defensePart": "other",
+            "note": "运动技能相关检定",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      },
+      {
+        "id": "e_yang",
+        "category": "专长",
+        "name": "养神",
+        "rank": "2",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "短休息自然恢复加倍；短休息恢复 1 点意志、精力与通用能量。",
+        "bonuses": []
+      },
+      {
+        "id": "e_alert",
+        "category": "专长",
+        "name": "警觉",
+        "rank": "1",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "免疫 D 级措手不及。",
+        "bonuses": [
+          {
+            "id": "b4",
+            "enabled": true,
+            "type": "无名",
+            "kind": "misc",
+            "stackMode": "obtain",
+            "value": 0,
+            "applies": [],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "immunity",
+            "miscText": "免疫 D 级措手不及效果影响"
+          }
+        ]
+      },
+      {
+        "id": "e_life",
+        "category": "专长",
+        "name": "生命潜力",
+        "rank": "2",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "房规。基因锁解锁判定结果 +1。",
+        "bonuses": []
+      },
+      {
+        "id": "e_elf",
+        "category": "血统",
+        "name": "精灵",
+        "rank": "D",
+        "essence": "魔幻",
+        "treeId": "精灵",
+        "enabled": true,
+        "notes": "精灵视觉、冥想、长生种、生命之力。种族技艺：运动技能判定 +3 内在。",
+        "bonuses": [
+          {
+            "id": "b5",
+            "enabled": true,
+            "type": "内在",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 3,
+            "applies": [
+              "skill:运动"
+            ],
+            "attr": "",
+            "skill": "运动",
+            "derived": "",
+            "defensePart": "other",
+            "note": "种族技艺：运动技能判定",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      },
+      {
+        "id": "e_dragon",
+        "category": "改造",
+        "name": "暗黑龙骑",
+        "rank": "D+C",
+        "essence": "特异",
+        "treeId": "暗黑龙骑",
+        "enabled": true,
+        "notes": "求生至上：生命上限 +5；C 级快速医疗 1。失去基因锁。",
+        "bonuses": [
+          {
+            "id": "b6",
+            "enabled": true,
+            "type": "无名",
+            "kind": "derived",
+            "stackMode": "increase",
+            "value": 5,
+            "applies": [],
+            "attr": "",
+            "skill": "",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "求生至上：生命值上限增加",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          },
+          {
+            "id": "b7",
+            "enabled": true,
+            "type": "无名",
+            "kind": "misc",
+            "stackMode": "obtain",
+            "value": 1,
+            "applies": [],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "fastHeal",
+            "miscText": "快速医疗 1"
+          }
+        ]
+      },
+      {
+        "id": "e_domain",
+        "category": "技艺",
+        "name": "诸域强化（感知）",
+        "rank": "C",
+        "essence": "特异",
+        "treeId": "诸域强化",
+        "enabled": true,
+        "notes": "选定感知：属性 +6 内在，基于该属性的判定 +12 内在 DP。",
+        "bonuses": [
+          {
+            "id": "b8",
+            "enabled": true,
+            "type": "内在",
+            "kind": "attr",
+            "stackMode": "obtain",
+            "value": 6,
+            "applies": [],
+            "attr": "感知",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "感知属性",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          },
+          {
+            "id": "b9",
+            "enabled": true,
+            "type": "内在",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 12,
+            "applies": [
+              "attr:感知"
+            ],
+            "attr": "感知",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "感知相关判定",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      },
+      {
+        "id": "e_bow",
+        "category": "能力组",
+        "name": "弓道修行者",
+        "rank": "D",
+        "essence": "魔幻",
+        "treeId": "弓道修行者",
+        "enabled": true,
+        "notes": "禅宗射手：弓箭远程攻击以感知取代敏捷。武器专攻：弓专业加值提升 2。心神合一 / 一发破的见加值开关。",
+        "bonuses": [
+          {
+            "id": "b10",
+            "enabled": true,
+            "type": "专业",
+            "kind": "checkDp",
+            "stackMode": "increase",
+            "value": 2,
+            "applies": [
+              "attackType:bow"
+            ],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "武器专攻：弓专业提升",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          },
+          {
+            "id": "b11",
+            "enabled": true,
+            "type": "洞察",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 9,
+            "applies": [
+              "attackType:bow"
+            ],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "心神合一",
+            "consume": "1 精力",
+            "conditional": true,
+            "miscType": "",
+            "miscText": ""
+          },
+          {
+            "id": "b12",
+            "enabled": true,
+            "type": "无名",
+            "kind": "extraSuccess",
+            "stackMode": "obtain",
+            "value": 3,
+            "applies": [
+              "attackType:bow"
+            ],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "一发破的",
+            "consume": "1 精力",
+            "conditional": true,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      },
+      {
+        "id": "e_armor",
+        "category": "物品",
+        "name": "轻型防弹衣",
+        "rank": "",
+        "essence": "科技",
+        "treeId": "",
+        "enabled": true,
+        "notes": "轻甲。盔甲防御 2。【防弹】",
+        "bonuses": [
+          {
+            "id": "b13",
+            "enabled": true,
+            "type": "盔甲防御",
+            "kind": "defense",
+            "stackMode": "obtain",
+            "value": 2,
+            "applies": [
+              "defense"
+            ],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "armor",
+            "note": "盔甲防御",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          },
+          {
+            "id": "b14",
+            "enabled": true,
+            "type": "无名",
+            "kind": "misc",
+            "stackMode": "obtain",
+            "value": 0,
+            "applies": [],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "keyword",
+            "miscText": "【防弹】"
+          }
+        ]
+      },
+      {
+        "id": "e_ring",
+        "category": "物品",
+        "name": "学徒的护盾戒指",
+        "rank": "",
+        "essence": "魔幻",
+        "treeId": "",
+        "enabled": true,
+        "notes": "装备者获得 DR 3/魔法。",
+        "bonuses": [
+          {
+            "id": "b15",
+            "enabled": true,
+            "type": "无名",
+            "kind": "misc",
+            "stackMode": "obtain",
+            "value": 3,
+            "applies": [],
+            "attr": "",
+            "skill": "",
+            "derived": "",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "dr",
+            "miscText": "DR 3/魔法"
+          }
+        ]
+      },
+      {
+        "id": "e_longbow",
+        "category": "物品",
+        "name": "长弓",
+        "rank": "",
+        "essence": "自然",
+        "treeId": "",
+        "enabled": true,
+        "notes": "伤害 3L，专业：弓，穿刺，体积 3，基本射程 40 米。已写入攻击预设。",
+        "bonuses": []
+      },
+      {
+        "id": "e_td9hlx13",
+        "category": "技艺",
+        "name": "区域攻防强化",
+        "rank": "D",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_284hn9zy",
+            "enabled": true,
+            "type": "增强",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 3,
+            "applies": [
+              "allAttacks",
+              "defense",
+              "check:willSave",
+              "check:reflex",
+              "check:fortitude"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      },
+      {
+        "id": "e_lvkapcu1",
+        "category": "技艺",
+        "name": "诸域强化（风度）",
+        "rank": "D",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_uqtziq8p",
+            "enabled": true,
+            "type": "修行",
+            "kind": "attr",
+            "stackMode": "obtain",
+            "value": 2,
+            "applies": [
+              "allChecks"
+            ],
+            "attr": "风度",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          },
+          {
+            "id": "b_ul6bel46",
+            "enabled": true,
+            "type": "修行",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 6,
+            "applies": [
+              "attr:风度"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      },
+      {
+        "id": "e_rftr80bs",
+        "category": "技艺",
+        "name": "弓道修行",
+        "rank": "D",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_8iqi2fcy",
+            "enabled": true,
+            "type": "修行",
+            "kind": "attr",
+            "stackMode": "obtain",
+            "value": 2,
+            "applies": [
+              "allChecks"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          },
+          {
+            "id": "b_3ww2g099",
+            "enabled": true,
+            "type": "修行",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 6,
+            "applies": [
+              "allAttacks"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      },
+      {
+        "id": "e_b3pm6uan",
+        "category": "物品",
+        "name": "安定情绪之戒",
+        "rank": "",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_x3pza9qn",
+            "enabled": true,
+            "type": "器械",
+            "kind": "attr",
+            "stackMode": "obtain",
+            "value": 2,
+            "applies": [
+              "allChecks"
+            ],
+            "attr": "决心",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": ""
+          }
+        ]
+      }
+    ],
+    "attacks": [
+      {
+        "id": "atk_bow",
+        "enabled": true,
+        "name": "普通攻击（弓）",
+        "attackType": "bow",
+        "attr": "感知",
+        "skill": "运动",
+        "profession": "弓箭攻击",
+        "weaponDamage": 3,
+        "weaponSize": 3,
+        "strReq": 3,
+        "range": 40,
+        "damageType": "穿刺 / 严重",
+        "notes": "禅宗射手：以感知取代敏捷。"
+      }
+    ],
+    "power": {
+      "d": 3,
+      "c": 1,
+      "b": 0,
+      "a": 0,
+      "s": 0,
+      "ss": 0,
+      "points": 4700,
+      "xp": 12
+    }
+  }
+}

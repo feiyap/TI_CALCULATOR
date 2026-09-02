@@ -32,10 +32,62 @@
     { id: "attr", label: "属性加值" },
     { id: "skillRank", label: "技能等级" },
     { id: "checkDp", label: "判定 DP" },
+    { id: "attrReplace", label: "取代判定属性" },
     { id: "extraSuccess", label: "附加成功" },
     { id: "derived", label: "衍生属性" },
     { id: "defense", label: "防御构成" },
+    { id: "energyPool", label: "能量池" },
     { id: "misc", label: "其他（DR / 备注）" }
+  ];
+
+  var VALUE_SOURCES = [
+    { id: "attr", label: "属性值" },
+    { id: "legendary", label: "传奇点数" },
+    { id: "skill", label: "技能等级" },
+    { id: "entryLevel", label: "条目等级" },
+    { id: "influence", label: "影响力" },
+    { id: "control", label: "控制力" }
+  ];
+
+  var CAP_MODES = [
+    { id: "none", label: "无上限" },
+    { id: "fixed", label: "固定上限" },
+    { id: "entryLevel", label: "条目等级 × N" },
+    { id: "attr", label: "属性 × N" }
+  ];
+
+  var ENERGY_PARTS = [
+    { id: "cap", label: "能量池上限" },
+    { id: "hourly", label: "每小时回复" },
+    { id: "rest8", label: "每8小时回复" }
+  ];
+
+  /* 能力组/支线等级：D=1 C=3 B=9 A=27 S=81 SS=243。专长等级若写数字则按数字。 */
+  var RANK_STEPS = [
+    { key: "SS", n: 243 },
+    { key: "S", n: 81 },
+    { key: "A", n: 27 },
+    { key: "B", n: 9 },
+    { key: "C", n: 3 },
+    { key: "D", n: 1 }
+  ];
+
+  var ENHANCE_RANKS = [
+    { id: "", label: "无", cap: 0, hourly: 0 },
+    { id: "D", label: "D 基础（上限+10，每小时 1）", cap: 10, hourly: 1 },
+    { id: "C", label: "C 次级（上限+30，每小时 2）", cap: 30, hourly: 2 },
+    { id: "B", label: "B 中级（上限+70，每小时 4）", cap: 70, hourly: 4 },
+    { id: "A", label: "A 高级（上限+150，每小时 8）", cap: 150, hourly: 8 }
+  ];
+
+  var ENERGY_TEMPLATES = [
+    { id: "custom", name: "自定义", attr1: "智力", attr2: "感知", divisor: 4, rest8: "custom", hourly: "enhance", category: "generic" },
+    { id: "spirit", name: "灵力", attr1: "决心", attr2: "沉着", divisor: 4, rest8: "minKey", hourly: "enhance", shortRest: "minKeyLegendary", category: "generic", note: "消耗称灵感疲劳。长休息回复关键属性较低者。" },
+    { id: "manaMind", name: "精神魔力", attr1: "智力", attr2: "感知", divisor: 4, rest8: "toMax", hourly: "sumLegendary", category: "generic", note: "长休息回满。冥想每小时回复关键属性传奇之和。" },
+    { id: "manaInnate", name: "天生魔力", attr1: "耐力", attr2: "风度", divisor: 4, rest8: "toMaxFrom24x3", hourly: "spread24x3", category: "generic", note: "24 小时回复到三倍上限，分摊到可回复 1 点的时间上。" },
+    { id: "manaLife", name: "生命魔力", attr1: "耐力", attr2: "智力", divisor: 4, rest8: "spread24", hourly: "spread24", category: "generic", note: "24 小时回复到上限，分摊到最小可回复时间。" },
+    { id: "stamina", name: "精力", attr1: "耐力", attr2: "智力", divisor: 1, rest8: "toMax", hourly: "enhance", shortRest: "maxKeyLegendary", linkedDerived: "energy", category: "generic", note: "上限取衍生精力。长休息回满；短休息回复较高关键属性传奇。" },
+    { id: "willpower", name: "意志力", attr1: "决心", attr2: "沉着", divisor: 1, rest8: "toMax", hourly: "enhance", linkedDerived: "willpower", category: "generic", note: "上限取衍生意志力。能量池强化不增加意志值或意志检定。" }
   ];
 
   var DERIVED_TARGETS = [
@@ -92,6 +144,8 @@
     { id: "allChecks", label: "全部判定" },
     { id: "allAttacks", label: "全部攻击" },
     { id: "defense", label: "防御" },
+    { id: "allSaves", label: "三豁免" },
+    { id: "allWill", label: "意志检定与豁免" },
     { id: "check:initiative", label: "先攻" },
     { id: "check:willCheck", label: "意志检定" },
     { id: "check:willSave", label: "意志豁免" },
@@ -140,8 +194,72 @@
       entries: [],
       attacks: [],
       checks: [],
+      energyPools: [],
       power: emptyPower()
     };
+  }
+
+  function emptyEnergyPool(templateId) {
+    var tpl = energyTemplate(templateId || "spirit");
+    return {
+      id: uid("pool"),
+      enabled: true,
+      name: tpl.name,
+      template: tpl.id,
+      category: tpl.category || "generic",
+      attr1: tpl.attr1 || "决心",
+      attr2: tpl.attr2 || "沉着",
+      divisor: tpl.divisor || 4,
+      extraOpenings: 0,
+      enhanceRank: "",
+      bonusCap: 0,
+      bonusHourly: 0,
+      bonusRest8: 0,
+      notes: tpl.note || ""
+    };
+  }
+
+  function energyTemplate(id) {
+    var found = ENERGY_TEMPLATES.filter(function (t) { return t.id === id; })[0];
+    return found || ENERGY_TEMPLATES[0];
+  }
+
+  function enhanceInfo(rank) {
+    var found = ENHANCE_RANKS.filter(function (r) { return r.id === rank; })[0];
+    return found || ENHANCE_RANKS[0];
+  }
+
+  function parseRankLevel(rank, override) {
+    if (override !== "" && override != null && !isNaN(Number(override))) return Number(override);
+    var s = String(rank == null ? "" : rank).trim();
+    if (!s) return 0;
+    if (/^\d+(\.\d+)?$/.test(s)) return Number(s);
+    var upper = s.toUpperCase();
+    var best = 0;
+    RANK_STEPS.forEach(function (step) {
+      var re = new RegExp("(?:^|[^A-Z])" + step.key + "(?:[^A-Z]|$)");
+      if (re.test(upper) && step.n > best) best = step.n;
+    });
+    return best;
+  }
+
+  function formatSkillName(name) {
+    var m = String(name || "").match(/^(手艺|表达)-(.+)$/);
+    return m ? m[1] + "（" + m[2] + "）" : name;
+  }
+
+  function skillSelectNames(ch) {
+    var names = Object.keys(SKILLS).slice();
+    SUBSKILL_PARENTS.forEach(function (p) {
+      if (names.indexOf(p) === -1) names.push(p);
+    });
+    (ch && ch.white && ch.white.subskills ? ch.white.subskills : []).forEach(function (sub) {
+      if (sub && sub.parent && sub.name) {
+        var id = sub.parent + "-" + sub.name;
+        if (names.indexOf(id) === -1) names.push(id);
+      }
+    });
+    return names;
   }
 
   function emptyPower() {
@@ -265,6 +383,9 @@
 
   function allSkillNames(ch) {
     var names = Object.keys(SKILLS).slice();
+    SUBSKILL_PARENTS.forEach(function (p) {
+      if (names.indexOf(p) === -1) names.push(p);
+    });
     (ch.white.subskills || []).forEach(function (sub) {
       if (sub && sub.parent && sub.name) names.push(sub.parent + "-" + sub.name);
     });
@@ -276,7 +397,17 @@
     var sub = (ch.white.subskills || []).find(function (s) {
       return s.parent + "-" + s.name === name;
     });
-    return sub ? { rank: sub.rank || 0, professions: sub.professions || [] } : emptySkill(0);
+    if (sub) return { rank: sub.rank || 0, professions: sub.professions || [] };
+    if (name === "手艺" || name === "表达") {
+      var best = emptySkill(0);
+      (ch.white.subskills || []).forEach(function (s) {
+        if (s && s.parent === name && (Number(s.rank) || 0) > (best.rank || 0)) {
+          best = { rank: s.rank || 0, professions: s.professions || [] };
+        }
+      });
+      return best;
+    }
+    return emptySkill(0);
   }
 
   function skillExtraSuccess(rank) {
@@ -477,7 +608,22 @@
           consume: b.consume || "",
           conditional: !!b.conditional,
           miscType: b.miscType || "",
-          miscText: b.miscText || ""
+          miscText: b.miscText || "",
+          valueMode: b.valueMode || "fixed",
+          valueSrc: b.valueSrc || "attr",
+          valueAttr: b.valueAttr || b.attr || "风度",
+          valueSkill: b.valueSkill || b.skill || "",
+          valueMult: b.valueMult == null || b.valueMult === "" ? 1 : Number(b.valueMult),
+          capMode: b.capMode || "none",
+          capAttr: b.capAttr || "风度",
+          capMult: b.capMult == null || b.capMult === "" ? 1 : Number(b.capMult),
+          capValue: Number(b.capValue) || 0,
+          replaceFrom: b.replaceFrom || "",
+          replaceTo: b.replaceTo || "",
+          energyPart: b.energyPart || "cap",
+          energyName: b.energyName || "",
+          entryRank: entry.rank || "",
+          levelValue: entry.levelValue
         });
       });
     });
@@ -488,6 +634,8 @@
     if (!applies || !applies.length) return false;
     return applies.some(function (tag) {
       if (tag === "allChecks" && ctx.isCheck) return true;
+      if (tag === "allSaves" && (ctx.checkId === "reflex" || ctx.checkId === "fortitude" || ctx.checkId === "willSave")) return true;
+      if (tag === "allWill" && (ctx.checkId === "willCheck" || ctx.checkId === "willSave")) return true;
       if (tag === "allAttacks" && ctx.isAttack) return true;
       if (tag === "defense" && ctx.isDefense) return true;
       if (tag === "check:" + ctx.checkId) return true;
@@ -499,22 +647,51 @@
     });
   }
 
-  function compute(ch) {
-    ch = ch || emptyCharacter();
-    var white = ch.white || emptyCharacter().white;
-    var flat = flattenBonuses(ch);
+  function resolveBonusValue(b, env) {
+    env = env || {};
+    if (!b || b.valueMode !== "formula") return Number(b && b.value) || 0;
+    var attrs = env.attrs || {};
+    var skills = env.skills || {};
+    var raw = 0;
+    var src = b.valueSrc || "attr";
+    if (src === "attr") raw = attrs[b.valueAttr] ? attrs[b.valueAttr].total : 0;
+    else if (src === "legendary") raw = attrs[b.valueAttr] ? attrs[b.valueAttr].legendary : 0;
+    else if (src === "skill") raw = skills[b.valueSkill] ? skills[b.valueSkill].total : 0;
+    else if (src === "entryLevel") raw = parseRankLevel(b.entryRank, b.levelValue);
+    else if (src === "influence") raw = Number(env.influence) || 0;
+    else if (src === "control") raw = Number(env.control) || 0;
+    var mult = b.valueMult == null || b.valueMult === "" ? 1 : Number(b.valueMult);
+    if (!isFinite(mult)) mult = 1;
+    raw = raw * mult;
+    var cap = Infinity;
+    var capMode = b.capMode || "none";
+    if (capMode === "fixed") cap = Number(b.capValue) || 0;
+    else if (capMode === "entryLevel") {
+      cap = parseRankLevel(b.entryRank, b.levelValue) * (Number(b.capMult) || 1);
+    } else if (capMode === "attr") {
+      cap = (attrs[b.capAttr] ? attrs[b.capAttr].total : 0) * (Number(b.capMult) || 1);
+    }
+    if (raw > cap) raw = cap;
+    return Math.floor(raw);
+  }
 
-    var volume = Number(white.volume) || 5;
-    flat.filter(function (b) { return b.kind === "derived" && b.derived === "volume"; }).forEach(function (b) {
-      volume += b.value;
+  function withResolved(items, env) {
+    return (items || []).map(function (it) {
+      if (it.valueMode !== "formula") return it;
+      var c = clone(it);
+      c.value = resolveBonusValue(it, env);
+      var hint = "变量→" + c.value;
+      c.note = it.note ? it.note + "（" + hint + "）" : hint;
+      return c;
     });
-    var sizeAdj = volumeAdjust(volume);
+  }
 
+  function computeAttrBlock(white, items, env) {
     var attrs = {};
     ATTRS.forEach(function (name) {
       var whiteVal = Number(white.attrs[name]) || 0;
-      var items = flat.filter(function (b) { return b.kind === "attr" && b.attr === name; });
-      var stacked = stackByType(items, true);
+      var list = withResolved(items.filter(function (b) { return b.kind === "attr" && b.attr === name; }), env);
+      var stacked = stackByType(list, true);
       var total = whiteVal + stacked.total;
       var legendary = legendaryOf(total);
       attrs[name] = {
@@ -526,13 +703,29 @@
         stacked: stacked
       };
     });
+    return attrs;
+  }
+
+  function compute(ch) {
+    ch = ch || emptyCharacter();
+    var white = ch.white || emptyCharacter().white;
+    var flat = flattenBonuses(ch);
+
+    var attrs = computeAttrBlock(white, flat.filter(function (b) { return b.kind === "attr" && b.valueMode !== "formula"; }), {});
+    attrs = computeAttrBlock(white, flat.filter(function (b) { return b.kind === "attr"; }), { attrs: attrs });
+
+    var volume = Number(white.volume) || 5;
+    withResolved(flat.filter(function (b) { return b.kind === "derived" && b.derived === "volume"; }), { attrs: attrs }).forEach(function (b) {
+      volume += b.value;
+    });
+    var sizeAdj = volumeAdjust(volume);
 
     var skillNames = allSkillNames(ch);
     var skills = {};
     skillNames.forEach(function (name) {
       var base = getSkill(ch, name);
       var whiteRank = Number(base.rank) || 0;
-      var items = flat.filter(function (b) { return b.kind === "skillRank" && b.skill === name; });
+      var items = withResolved(flat.filter(function (b) { return b.kind === "skillRank" && b.skill === name; }), { attrs: attrs });
       var stacked = stackByType(items, false);
       var total = whiteRank + stacked.total;
       skills[name] = {
@@ -546,13 +739,16 @@
       };
     });
 
-    var infItems = flat.filter(function (b) { return b.kind === "derived" && b.derived === "influence"; });
-    var ctrlItems = flat.filter(function (b) { return b.kind === "derived" && b.derived === "control"; });
+    var formulaEnv = { attrs: attrs, skills: skills, influence: 0, control: 0 };
+    var infItems = withResolved(flat.filter(function (b) { return b.kind === "derived" && b.derived === "influence"; }), formulaEnv);
+    var ctrlItems = withResolved(flat.filter(function (b) { return b.kind === "derived" && b.derived === "control"; }), formulaEnv);
     var influence = Math.floor(attrs.风度.total / 2) + attrs.风度.legendary + stackByType(infItems, false).total;
     var control = Math.floor(attrs.操控.total / 2) + attrs.操控.legendary + stackByType(ctrlItems, false).total;
+    formulaEnv.influence = influence;
+    formulaEnv.control = control;
 
     function derivedBonus(id) {
-      return stackByType(flat.filter(function (b) { return b.kind === "derived" && b.derived === id; }), false);
+      return stackByType(withResolved(flat.filter(function (b) { return b.kind === "derived" && b.derived === id; }), formulaEnv), false);
     }
 
     var hpB = derivedBonus("hp");
@@ -637,7 +833,9 @@
       if (b.defensePart === "insight") b.stackMode = "increase";
     });
 
-    var allBonuses = flat.concat(syn);
+    formulaEnv.derived = derived;
+    var resolvedFlat = withResolved(flat, formulaEnv);
+    var allBonuses = resolvedFlat.concat(syn);
 
     function checkCtx(def, extra) {
       extra = extra || {};
@@ -708,7 +906,7 @@
         if (!n) return;
         if (a === "力量") items.push(synthetic("传奇力量", "完美", "checkDp", n, { applies: ["attr:力量"], note: "力量相关判定 DP" }));
       });
-      if (ctx.checkId === "willCheck" || ctx.checkId === "willSave") {
+      if ((ctx.checkId === "willCheck" || ctx.checkId === "willSave") && (ctx.attrs || []).indexOf("决心") !== -1) {
         var nr = attrs.决心.legendary;
         if (nr) items.push(synthetic("传奇决心", "完美", "checkDp", nr, { note: "意志检定 DP" }));
       }
@@ -733,27 +931,54 @@
       return items;
     }
 
+    function applyEntryReplaces(ctx) {
+      var map = {};
+      allBonuses.forEach(function (b) {
+        if (b.kind !== "attrReplace") return;
+        if (!matchApplies(b.applies, ctx)) return;
+        var from = b.replaceFrom;
+        var to = b.replaceTo;
+        if (!from || !to || !attrs[to]) return;
+        if (!map[from] || attrs[to].total > attrs[map[from].to].total) {
+          map[from] = { to: to, source: b.sourceName, note: b.note };
+        }
+      });
+      return map;
+    }
+
     function buildCheck(def, extra) {
       extra = extra || {};
       var ctx = checkCtx(def, extra);
       var contest = ctx.contest;
       var lines = [];
       var dpItems = [];
+      var replaces = applyEntryReplaces(ctx);
+      if (extra.attrReplace && extra.attrReplace.from && extra.attrReplace.to) {
+        replaces[extra.attrReplace.from] = {
+          to: extra.attrReplace.to,
+          source: extra.attrReplace.note || "替换关键属性",
+          note: extra.attrReplace.note
+        };
+      }
+      Object.keys(replaces).forEach(function (from) {
+        var to = replaces[from].to;
+        ctx.attrs = ctx.attrs.filter(function (a) { return a !== from; });
+        if (ctx.attrs.indexOf(to) === -1) ctx.attrs.push(to);
+      });
 
       (def.attrs || []).forEach(function (a) {
-        lines.push({ label: a, value: attrs[a].total, kind: "base", note: attrs[a].bonus ? ("白卡" + attrs[a].white + (attrs[a].bonus ? " +加值" + attrs[a].bonus : "")) : "" });
-      });
-      if (extra.attrReplace) {
-        lines = lines.filter(function (ln) { return ln.label !== extra.attrReplace.from; });
-        if (!lines.some(function (ln) { return ln.label === extra.attrReplace.to; })) {
-          lines.unshift({ label: extra.attrReplace.to, value: attrs[extra.attrReplace.to].total, kind: "base", note: extra.attrReplace.note || "替换关键属性" });
+        var use = replaces[a] ? replaces[a].to : a;
+        if (lines.some(function (ln) { return ln.label === use; })) return;
+        var note = attrs[use] && attrs[use].bonus ? ("白卡" + attrs[use].white + " +加值" + attrs[use].bonus) : "";
+        if (replaces[a]) {
+          note = (note ? note + " · " : "") + (replaces[a].source || "") + "：以" + use + "取代" + a;
         }
-        ctx.attrs = ctx.attrs.filter(function (a) { return a !== extra.attrReplace.from; });
-        if (ctx.attrs.indexOf(extra.attrReplace.to) === -1) ctx.attrs.push(extra.attrReplace.to);
-      }
+        lines.push({ label: use, value: attrs[use].total, kind: "base", note: note });
+      });
       if (extra.attr) {
-        if (!lines.some(function (ln) { return ln.label === extra.attr; })) {
-          lines.push({ label: extra.attr, value: attrs[extra.attr].total, kind: "base" });
+        var extraUse = replaces[extra.attr] ? replaces[extra.attr].to : extra.attr;
+        if (!lines.some(function (ln) { return ln.label === extraUse; })) {
+          lines.push({ label: extraUse, value: attrs[extraUse].total, kind: "base" });
         }
       }
 
@@ -762,7 +987,7 @@
       var sc = skillContribution(skillName, profession);
       if (skillName) {
         lines.push({
-          label: skillName + (sc.halved ? "/2" : ""),
+          label: formatSkillName(skillName) + (sc.halved ? "/2" : ""),
           value: sc.rank,
           kind: "base",
           note: sc.halved ? "无对应专业，级数减半" : (sc.hasProf && profession ? "专业：" + profession : "")
@@ -900,7 +1125,7 @@
         contest: "竞争"
       });
       var capInfo = damageCapInfo(preset, skills, attrs);
-      var capB = stackByType(flat.filter(function (b) {
+      var capB = stackByType(resolvedFlat.filter(function (b) {
         return b.kind === "derived" && b.derived === "damageCap" && matchApplies(b.applies, result.ctx);
       }), false);
       var capParts = capInfo.parts.slice();
@@ -917,12 +1142,165 @@
       };
     });
 
+    function poolBonusPart(pool, part) {
+      var items = resolvedFlat.filter(function (b) {
+        if (b.kind !== "energyPool" || (b.energyPart || "cap") !== part) return false;
+        var n = String(b.energyName || "").trim();
+        if (!n) return false;
+        return n === pool.name || n === pool.id || n === energyTemplate(pool.template).name;
+      });
+      return stackByType(items, false);
+    }
+
+    function roundRate(n) {
+      if (!isFinite(n)) return 0;
+      var r = Math.round(n * 100) / 100;
+      return r;
+    }
+
+    var energyPools = (ch.energyPools || []).filter(function (p) { return p && p.enabled !== false; }).map(function (pool) {
+      var tpl = energyTemplate(pool.template);
+      var a1 = pool.attr1 || tpl.attr1;
+      var a2 = pool.attr2 || tpl.attr2;
+      var t1 = a1 && attrs[a1] ? attrs[a1].total : 0;
+      var t2 = a2 && attrs[a2] ? attrs[a2].total : 0;
+      var n1 = a1 && attrs[a1] ? attrs[a1].legendary : 0;
+      var n2 = a2 && attrs[a2] ? attrs[a2].legendary : 0;
+      var enh = enhanceInfo(pool.enhanceRank);
+      var parts = [];
+      var baseCap = 0;
+      if (tpl.linkedDerived && derived[tpl.linkedDerived]) {
+        baseCap = derived[tpl.linkedDerived].total;
+        parts.push({ label: "衍生" + (tpl.linkedDerived === "energy" ? "精力" : "意志力"), value: baseCap });
+      } else {
+        var div = Number(pool.divisor);
+        if (!div) div = tpl.divisor || 4;
+        if (div <= 0) div = 1;
+        baseCap = Math.floor((t1 + t2) / div);
+        parts.push({ label: "(" + (a1 || "") + (a2 ? "+" + a2 : "") + ")/" + div, value: baseCap });
+      }
+      var cap = baseCap;
+      var cat = pool.category || tpl.category || "generic";
+      var extraOpen = Number(pool.extraOpenings) || 0;
+      if (cat !== "special" && extraOpen > 0) {
+        cap += extraOpen * 5;
+        parts.push({ label: "重复开启 ×" + extraOpen, value: extraOpen * 5 });
+      }
+      if (enh.cap) {
+        cap += enh.cap;
+        parts.push({ label: "能量池强化 " + (pool.enhanceRank || ""), value: enh.cap });
+      }
+      var extraCap = Number(pool.bonusCap) || 0;
+      if (extraCap) {
+        cap += extraCap;
+        parts.push({ label: "额外上限", value: extraCap });
+      }
+      var capStacked = poolBonusPart(pool, "cap");
+      if (capStacked.total) {
+        cap += capStacked.total;
+        parts.push({ label: "条目加值", value: capStacked.total });
+      }
+
+      var hourly = Number(pool.bonusHourly) || 0;
+      var hourlyParts = [];
+      if (enh.hourly) {
+        hourly += enh.hourly;
+        hourlyParts.push({ label: "能量池强化", value: enh.hourly });
+      }
+      if (tpl.hourly === "sumLegendary") {
+        var med = n1 + n2;
+        hourly += med;
+        hourlyParts.push({ label: "冥想（关键属性传奇之和）", value: med });
+      } else if (tpl.hourly === "spread24") {
+        var h24 = cap / 24;
+        hourly += h24;
+        hourlyParts.push({ label: "24小时回满分摊", value: roundRate(h24) });
+      } else if (tpl.hourly === "spread24x3") {
+        var h3 = (cap * 3) / 24;
+        hourly += h3;
+        hourlyParts.push({ label: "24小时回复至三倍上限分摊", value: roundRate(h3) });
+      }
+      var hourStacked = poolBonusPart(pool, "hourly");
+      if (hourStacked.total) {
+        hourly += hourStacked.total;
+        hourlyParts.push({ label: "条目加值", value: hourStacked.total });
+      }
+
+      var rest8 = Number(pool.bonusRest8) || 0;
+      var restParts = [];
+      if (tpl.rest8 === "toMax") {
+        rest8 += cap;
+        restParts.push({ label: "长休息回满", value: cap });
+      } else if (tpl.rest8 === "minKey") {
+        var mn = Math.min(t1, t2);
+        rest8 += mn;
+        restParts.push({ label: "关键属性较低者", value: mn });
+        if (enh.hourly) {
+          rest8 += enh.hourly * 8;
+          restParts.push({ label: "强化 8 小时", value: enh.hourly * 8 });
+        }
+      } else if (tpl.rest8 === "spread24") {
+        var r24 = cap * 8 / 24;
+        rest8 += r24;
+        restParts.push({ label: "24小时回满分摊 8 小时", value: roundRate(r24) });
+      } else if (tpl.rest8 === "toMaxFrom24x3") {
+        rest8 += cap;
+        restParts.push({ label: "24小时回复三倍上限 → 8小时约一倍", value: cap });
+      } else if (enh.hourly) {
+        rest8 += enh.hourly * 8;
+        restParts.push({ label: "强化 8 小时", value: enh.hourly * 8 });
+      }
+      var restStacked = poolBonusPart(pool, "rest8");
+      if (restStacked.total) {
+        rest8 += restStacked.total;
+        restParts.push({ label: "条目加值", value: restStacked.total });
+      }
+      if (tpl.rest8 === "toMax" || tpl.rest8 === "minKey") {
+        if (rest8 > cap) rest8 = cap;
+      }
+
+      var shortRest = 0;
+      var shortNote = "";
+      if (tpl.shortRest === "minKeyLegendary") {
+        shortRest = Math.min(n1, n2);
+        shortNote = "15 分钟精神修炼：较低关键属性传奇";
+      } else if (tpl.shortRest === "maxKeyLegendary") {
+        shortRest = Math.max(n1, n2);
+        shortNote = "15 分钟短休息：较高关键属性传奇";
+      }
+
+      var apparent = "无支线";
+      if (cap >= 160) apparent = "S";
+      else if (cap >= 80) apparent = "A";
+      else if (cap >= 40) apparent = "B";
+      else if (cap >= 20) apparent = "C";
+      else if (cap > 0) apparent = "D";
+
+      return {
+        pool: pool,
+        name: pool.name || tpl.name,
+        template: tpl,
+        cap: cap,
+        hourly: roundRate(hourly),
+        rest8: roundRate(rest8),
+        shortRest: shortRest,
+        shortNote: shortNote,
+        parts: parts,
+        hourlyParts: hourlyParts,
+        restParts: restParts,
+        apparent: apparent,
+        keyAttrs: [a1, a2].filter(Boolean),
+        stackedCap: capStacked
+      };
+    });
+
     return {
       attrs: attrs,
       skills: skills,
       derived: derived,
       checks: checks,
       attacks: attacks,
+      energyPools: energyPools,
       defense: {
         standing: defenseStanding,
         full: defenseFull,
@@ -963,12 +1341,22 @@
     SHEET_CHECK_IDS: SHEET_CHECK_IDS,
     ATTACK_TYPES: ATTACK_TYPES,
     APPLY_PRESETS: APPLY_PRESETS,
+    VALUE_SOURCES: VALUE_SOURCES,
+    CAP_MODES: CAP_MODES,
+    ENERGY_PARTS: ENERGY_PARTS,
+    ENERGY_TEMPLATES: ENERGY_TEMPLATES,
+    ENHANCE_RANKS: ENHANCE_RANKS,
     DEFAULT_TYPE_BY_CATEGORY: DEFAULT_TYPE_BY_CATEGORY,
     uid: uid,
     clone: clone,
     emptyCharacter: emptyCharacter,
     emptySkill: emptySkill,
     emptyPower: emptyPower,
+    emptyEnergyPool: emptyEnergyPool,
+    energyTemplate: energyTemplate,
+    parseRankLevel: parseRankLevel,
+    formatSkillName: formatSkillName,
+    skillSelectNames: skillSelectNames,
     combatPower: combatPower,
     compactRank: compactRank,
     allCheckDefs: allCheckDefs,

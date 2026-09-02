@@ -113,10 +113,26 @@ button { cursor: pointer; }
   border-radius: 4px;
   padding: 4px 6px;
 }
+#subskills .sub-row {
+  grid-template-columns: 88px 56px 1fr 1fr auto;
+}
 #subskills select option {
   color: #111;
   background: #f7f1e4;
 }
+
+.formula-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+.formula-box select, .formula-box input {
+  width: 100%;
+}
+.tiny-lab { font-size: 11px; color: var(--muted); }
+
+.energy-box { margin-top: 10px; }
 
 .power-box { margin-top: 18px; padding-top: 8px; border-top: 1px dashed var(--line); }
 .power-counts { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
@@ -141,6 +157,7 @@ button { cursor: pointer; }
 .bonus-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .bonus-table th, .bonus-table td { border-bottom: 1px solid #3a3228; padding: 4px 3px; text-align: left; vertical-align: top; }
 .bonus-table input, .bonus-table select { width: 100%; background: #16130f; border: 1px solid var(--line); border-radius: 4px; padding: 3px 4px; }
+.entry-body { overflow-x: auto; }
 .off { opacity: 0.45; }
 
 .sheet-block { margin-bottom: 18px; }

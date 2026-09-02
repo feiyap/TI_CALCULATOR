@@ -80,9 +80,8 @@
     document.querySelectorAll(".tab").forEach(function (t) {
       t.classList.toggle("active", t.getAttribute("data-tab") === name);
     });
-    ["white", "entries", "attacks", "info", "checks"].forEach(function (n) {
-      var el = $("pane-" + n);
-      if (el) el.classList.toggle("hidden", n !== name);
+    document.querySelectorAll("[id^='pane-']").forEach(function (el) {
+      el.classList.toggle("hidden", el.id !== "pane-" + name);
     });
   }
 
@@ -93,6 +92,7 @@
     renderEntries();
     renderChecks();
     var result = W.compute(state);
+    renderEnergy(result);
     renderAttacks(result);
     renderSheet(result);
     renderPresetSelect();
@@ -179,13 +179,14 @@
 
     var subs = state.white.subskills || [];
     $("subskills").innerHTML = subs.map(function (sub, idx) {
-      return '<div class="skill-row">' +
+      return '<div class="skill-row sub-row">' +
         '<select data-sub-parent="' + idx + '">' + W.SUBSKILL_PARENTS.map(function (p) {
           return '<option' + (sub.parent === p ? " selected" : "") + ">" + p + "</option>";
         }).join("") + "</select>" +
         '<input type="number" min="0" max="15" data-sub-rank="' + idx + '" value="' + (sub.rank || 0) + '">' +
-        '<span><input type="text" data-sub-name="' + idx + '" placeholder="子项名" value="' + esc(sub.name || "") + '"> ' +
-        '<button class="btn tiny danger" data-del-sub="' + idx + '">删</button></span></div>';
+        '<input type="text" data-sub-name="' + idx + '" placeholder="子项名，如神乐" value="' + esc(sub.name || "") + '">' +
+        '<input type="text" data-sub-prof="' + idx + '" placeholder="专业，逗号分隔" value="' + esc((sub.professions || []).join("，")) + '">' +
+        '<button class="btn tiny danger" data-del-sub="' + idx + '">删</button></div>';
     }).join("");
   }
 
@@ -211,6 +212,8 @@
       if (p) sub.parent = p.value;
       if (n) sub.name = n.value;
       if (r) sub.rank = Number(r.value) || 0;
+      var pf = document.querySelector('[data-sub-prof="' + idx + '"]');
+      if (pf) sub.professions = pf.value.split(/[,，;；]/).map(function (x) { return x.trim(); }).filter(Boolean);
     });
   }
 
@@ -218,12 +221,63 @@
     selected = selected || [];
     var extra = [];
     Object.keys(W.SKILLS).forEach(function (s) { extra.push({ id: "skill:" + s, label: "技能判定·" + s }); });
+    (state.white.subskills || []).forEach(function (sub) {
+      if (sub && sub.parent && sub.name) {
+        extra.push({ id: "skill:" + sub.parent + "-" + sub.name, label: "技能判定·" + W.formatSkillName(sub.parent + "-" + sub.name) });
+      }
+    });
+    W.SUBSKILL_PARENTS.forEach(function (p) {
+      extra.push({ id: "skill:" + p, label: "技能判定·" + p + "（最高子项）" });
+    });
     W.ATTRS.forEach(function (a) { extra.push({ id: "attr:" + a, label: "属性相关·" + a }); });
     (state.attacks || []).forEach(function (a) { extra.push({ id: "preset:" + a.id, label: "预设·" + a.name }); });
     (state.checks || []).forEach(function (c) { extra.push({ id: "check:" + c.id, label: "检定·" + (c.name || "自定义") }); });
     return W.APPLY_PRESETS.concat(extra).map(function (p) {
       return '<option value="' + esc(p.id) + '"' + (selected.indexOf(p.id) !== -1 ? " selected" : "") + ">" + esc(p.label) + "</option>";
     }).join("");
+  }
+
+  function kindsList() {
+    var list = (W.KINDS || []).slice();
+    var have = {};
+    list.forEach(function (k) { have[k.id] = true; });
+    [
+      { id: "attrReplace", label: "取代判定属性" },
+      { id: "energyPool", label: "能量池" }
+    ].forEach(function (k) {
+      if (have[k.id]) return;
+      var insertAt = 3;
+      list.splice(Math.min(insertAt, list.length), 0, k);
+    });
+    return list;
+  }
+
+  function skillSelectHtml(selected, includeEmpty) {
+    var subs = [];
+    var mains = [];
+    var names = W.skillSelectNames ? W.skillSelectNames(state) : Object.keys(W.SKILLS);
+    if (!W.skillSelectNames) {
+      (W.SUBSKILL_PARENTS || ["手艺", "表达"]).forEach(function (p) {
+        if (names.indexOf(p) === -1) names.push(p);
+      });
+      (state.white.subskills || []).forEach(function (sub) {
+        if (sub && sub.parent && sub.name) names.push(sub.parent + "-" + sub.name);
+      });
+    }
+    names.forEach(function (s) {
+      if (s === "手艺" || s === "表达" || s.indexOf("手艺-") === 0 || s.indexOf("表达-") === 0) subs.push(s);
+      else mains.push(s);
+    });
+    function opts(list) {
+      return list.map(function (s) {
+        return '<option value="' + esc(s) + '"' + (selected === s ? " selected" : "") + ">" +
+          esc(W.formatSkillName ? W.formatSkillName(s) : s) + "</option>";
+      }).join("");
+    }
+    var html = includeEmpty ? '<option value="">（无技能）</option>' : "";
+    html += '<optgroup label="手艺 / 表达">' + opts(subs.length ? subs : ["表达", "手艺"]) + "</optgroup>";
+    html += '<optgroup label="其他技能">' + opts(mains) + "</optgroup>";
+    return html;
   }
 
   function kindFields(b) {
@@ -233,10 +287,7 @@
       }).join("") + "</select>";
     }
     if (b.kind === "skillRank") {
-      var names = Object.keys(W.SKILLS);
-      return '<select data-bf="skill">' + names.map(function (s) {
-        return '<option' + (b.skill === s ? " selected" : "") + ">" + s + "</option>";
-      }).join("") + "</select>";
+      return '<select data-bf="skill">' + skillSelectHtml(b.skill) + "</select>";
     }
     if (b.kind === "derived") {
       return '<select data-bf="derived">' + W.DERIVED_TARGETS.map(function (d) {
@@ -251,7 +302,63 @@
     if (b.kind === "misc") {
       return '<input data-bf="miscText" placeholder="DR / 免疫 / 备注" value="' + esc(b.miscText || "") + '">';
     }
+    if (b.kind === "attrReplace") {
+      return '<div class="formula-box">以 <select data-bf="replaceTo">' + W.ATTRS.map(function (a) {
+        return '<option' + ((b.replaceTo || "感知") === a ? " selected" : "") + ">" + a + "</option>";
+      }).join("") + '</select> 取代 <select data-bf="replaceFrom">' + W.ATTRS.map(function (a) {
+        return '<option' + ((b.replaceFrom || "决心") === a ? " selected" : "") + ">" + a + "</option>";
+      }).join("") + "</select>" +
+        '<select data-bf="applies" multiple size="3">' + applyOptions(b.applies || []) + "</select></div>";
+    }
+    if (b.kind === "energyPool") {
+      return '<div class="formula-box"><input data-bf="energyName" placeholder="池名，如灵力" value="' + esc(b.energyName || "") + '">' +
+        '<select data-bf="energyPart">' + W.ENERGY_PARTS.map(function (d) {
+          return '<option value="' + d.id + '"' + ((b.energyPart || "cap") === d.id ? " selected" : "") + ">" + d.label + "</option>";
+        }).join("") + "</select></div>";
+    }
     return '<select data-bf="applies" multiple size="3">' + applyOptions(b.applies || []) + "</select>";
+  }
+
+  function valueFields(b) {
+    if (b.kind === "attrReplace") {
+      return '<span class="muted">—</span>';
+    }
+    var mode = b.valueMode || "fixed";
+    var html = '<select data-bvm="' + esc(b.id || "") + '">' +
+      '<option value="fixed"' + (mode !== "formula" ? " selected" : "") + ">固定</option>" +
+      '<option value="formula"' + (mode === "formula" ? " selected" : "") + ">变量</option></select>";
+    if (mode !== "formula") {
+      html += '<input type="number" data-bv-num value="' + (b.value || 0) + '">';
+      return '<div class="formula-box">' + html + "</div>";
+    }
+    html += '<select data-bf="valueSrc">' + W.VALUE_SOURCES.map(function (s) {
+      return '<option value="' + s.id + '"' + ((b.valueSrc || "attr") === s.id ? " selected" : "") + ">" + s.label + "</option>";
+    }).join("") + "</select>";
+    if ((b.valueSrc || "attr") === "attr" || b.valueSrc === "legendary") {
+      html += '<select data-bf="valueAttr">' + W.ATTRS.map(function (a) {
+        return '<option' + ((b.valueAttr || "风度") === a ? " selected" : "") + ">" + a + "</option>";
+      }).join("") + "</select>";
+    }
+    if (b.valueSrc === "skill") {
+      html += '<select data-bf="valueSkill">' + skillSelectHtml(b.valueSkill) + "</select>";
+    }
+    html += '<label class="tiny-lab">×</label><input type="number" step="0.5" data-bf="valueMult" value="' + (b.valueMult == null ? 1 : b.valueMult) + '">';
+    html += '<select data-bf="capMode">' + W.CAP_MODES.map(function (s) {
+      return '<option value="' + s.id + '"' + ((b.capMode || "none") === s.id ? " selected" : "") + ">" + s.label + "</option>";
+    }).join("") + "</select>";
+    if (b.capMode === "fixed") {
+      html += '<input type="number" data-bf="capValue" placeholder="上限" value="' + (b.capValue || 0) + '">';
+    }
+    if (b.capMode === "entryLevel") {
+      html += '<label class="tiny-lab">×N</label><input type="number" step="0.5" data-bf="capMult" value="' + (b.capMult == null ? 3 : b.capMult) + '">';
+    }
+    if (b.capMode === "attr") {
+      html += '<select data-bf="capAttr">' + W.ATTRS.map(function (a) {
+        return '<option' + ((b.capAttr || "风度") === a ? " selected" : "") + ">" + a + "</option>";
+      }).join("") + "</select>" +
+        '<input type="number" step="0.5" data-bf="capMult" value="' + (b.capMult == null ? 1 : b.capMult) + '">';
+    }
+    return '<div class="formula-box">' + html + "</div>";
   }
 
   function renderEntries() {
@@ -266,7 +373,7 @@
       var bonusRows = (e.bonuses || []).map(function (b, bi) {
         return '<tr class="' + (b.enabled === false ? "off" : "") + '">' +
           '<td><input type="checkbox" data-be="' + e.id + '" data-bi="' + bi + '" ' + (b.enabled !== false ? "checked" : "") + '></td>' +
-          '<td><select data-bk="' + e.id + '" data-bi="' + bi + '">' + W.KINDS.map(function (k) {
+          '<td><select data-bk="' + e.id + '" data-bi="' + bi + '">' + kindsList().map(function (k) {
             return '<option value="' + k.id + '"' + (b.kind === k.id ? " selected" : "") + ">" + k.label + "</option>";
           }).join("") + "</select></td>" +
           '<td><select data-bt="' + e.id + '" data-bi="' + bi + '">' + W.BONUS_TYPES.map(function (t) {
@@ -277,7 +384,7 @@
             '<option value="obtain"' + (b.stackMode !== "increase" ? " selected" : "") + ">获得（取高）</option>" +
             '<option value="increase"' + (b.stackMode === "increase" ? " selected" : "") + ">增加/提升</option>" +
           "</select></td>" +
-          '<td><input type="number" data-bv="' + e.id + '" data-bi="' + bi + '" value="' + (b.value || 0) + '"></td>' +
+          '<td>' + valueFields(b) + "</td>" +
           '<td><input data-bn="' + e.id + '" data-bi="' + bi + '" placeholder="说明" value="' + esc(b.note || "") + '"></td>' +
           '<td><input data-bc="' + e.id + '" data-bi="' + bi + '" placeholder="消耗" value="' + esc(b.consume || "") + '"></td>' +
           '<td><label class="muted"><input type="checkbox" data-bcond="' + e.id + '" data-bi="' + bi + '" ' + (b.conditional ? "checked" : "") + ">条件</label></td>" +
@@ -297,7 +404,8 @@
             '<div class="field"><label>分类</label><select data-ef="category" data-eid="' + e.id + '">' +
               W.CATEGORIES.map(function (c) { return '<option' + (e.category === c ? " selected" : "") + ">" + c + "</option>"; }).join("") +
             "</select></div>" +
-            '<div class="field"><label>等级</label><input data-ef="rank" data-eid="' + e.id + '" value="' + esc(e.rank) + '"></div>' +
+            '<div class="field"><label>等级（D/C/B/A 或数字）</label><input data-ef="rank" data-eid="' + e.id + '" value="' + esc(e.rank) + '"></div>' +
+            '<div class="field"><label>条目等级（变量用，可空）</label><input type="number" data-ef="levelValue" data-eid="' + e.id + '" placeholder="空则按等级换算" value="' + (e.levelValue == null ? "" : esc(e.levelValue)) + '"></div>' +
             '<div class="field"><label>本质</label><select data-ef="essence" data-eid="' + e.id + '">' +
               W.ESSENCES.map(function (c) { return '<option' + (e.essence === c ? " selected" : "") + ">" + c + "</option>"; }).join("") +
             "</select></div>" +
@@ -327,42 +435,46 @@
     if (!e) return;
     document.querySelectorAll('[data-eid="' + e.id + '"]').forEach(function (el) {
       var f = el.getAttribute("data-ef");
-      if (f) e[f] = el.value;
+      if (!f) return;
+      if (f === "levelValue") e.levelValue = el.value === "" ? "" : Number(el.value);
+      else e[f] = el.value;
     });
     (e.bonuses || []).forEach(function (b, bi) {
       var row = document.querySelector('[data-entry="' + e.id + '"]');
       if (!row) return;
-      var kindEl = row.querySelector('[data-bk][data-bi="' + bi + '"]');
-      var typeEl = row.querySelector('[data-bt][data-bi="' + bi + '"]');
-      var stackEl = row.querySelector('[data-bs][data-bi="' + bi + '"]');
-      var valEl = row.querySelector('[data-bv][data-bi="' + bi + '"]');
-      var noteEl = row.querySelector('[data-bn][data-bi="' + bi + '"]');
-      var conEl = row.querySelector('[data-bc][data-bi="' + bi + '"]');
-      var enEl = row.querySelector('[data-be][data-bi="' + bi + '"]');
-      var condEl = row.querySelector('[data-bcond][data-bi="' + bi + '"]');
+      var tds = row.querySelectorAll("tbody tr");
+      var td = tds[bi];
+      if (!td) return;
+      var kindEl = td.querySelector("[data-bk]");
+      var typeEl = td.querySelector("[data-bt]");
+      var stackEl = td.querySelector("[data-bs]");
+      var noteEl = td.querySelector("[data-bn]");
+      var conEl = td.querySelector("[data-bc]");
+      var enEl = td.querySelector("[data-be]");
+      var condEl = td.querySelector("[data-bcond]");
       if (kindEl) b.kind = kindEl.value;
       if (typeEl) b.type = typeEl.value;
       if (stackEl) b.stackMode = stackEl.value;
-      if (valEl) b.value = Number(valEl.value) || 0;
       if (noteEl) b.note = noteEl.value;
       if (conEl) b.consume = conEl.value;
       if (enEl) b.enabled = enEl.checked;
       if (condEl) b.conditional = condEl.checked;
-      var tds = row.querySelectorAll("tbody tr");
-      var td = tds[bi];
-      if (!td) return;
-      var attr = td.querySelector('[data-bf="attr"]');
-      var skill = td.querySelector('[data-bf="skill"]');
-      var der = td.querySelector('[data-bf="derived"]');
-      var dp = td.querySelector('[data-bf="defensePart"]');
-      var mt = td.querySelector('[data-bf="miscText"]');
-      var ap = td.querySelector('[data-bf="applies"]');
-      if (attr) b.attr = attr.value;
-      if (skill) b.skill = skill.value;
-      if (der) b.derived = der.value;
-      if (dp) b.defensePart = dp.value;
-      if (mt) { b.miscText = mt.value; b.miscType = b.miscType || "note"; }
-      if (ap) b.applies = Array.prototype.map.call(ap.selectedOptions, function (o) { return o.value; });
+      var modeEl = td.querySelector("[data-bvm]");
+      if (modeEl) b.valueMode = modeEl.value;
+      var valEl = td.querySelector("[data-bv-num]");
+      if (valEl) b.value = Number(valEl.value) || 0;
+      td.querySelectorAll("[data-bf]").forEach(function (el) {
+        var f = el.getAttribute("data-bf");
+        if (!f) return;
+        if (el.multiple) {
+          b[f] = Array.prototype.map.call(el.selectedOptions, function (o) { return o.value; });
+        } else if (el.type === "number") {
+          b[f] = el.value === "" ? "" : Number(el.value);
+        } else {
+          b[f] = el.value;
+        }
+      });
+      if (td.querySelector('[data-bf="miscText"]')) b.miscType = b.miscType || "note";
     });
   }
 
@@ -389,8 +501,7 @@
             W.ATTRS.map(function (a) { return '<option' + (c.attr2 === a ? " selected" : "") + ">" + a + "</option>"; }).join("") +
           "</select></div>" +
           '<div class="field"><label>技能</label><select data-cf="skill" data-cid="' + c.id + '">' +
-            '<option value="">（无技能）</option>' +
-            Object.keys(W.SKILLS).map(function (s) { return '<option' + (c.skill === s ? " selected" : "") + ">" + s + "</option>"; }).join("") +
+            skillSelectHtml(c.skill, true) +
           "</select></div>" +
           '<div class="field"><label>对应专业</label><input data-cf="profession" data-cid="' + c.id + '" value="' + esc(c.profession || "") + '"></div>' +
         "</div>" +
@@ -441,7 +552,7 @@
             W.ATTRS.map(function (x) { return '<option' + (a.attr === x ? " selected" : "") + ">" + x + "</option>"; }).join("") +
           "</select></div>" +
           '<div class="field"><label>关键技能</label><select data-af="skill" data-aid="' + a.id + '">' +
-            Object.keys(W.SKILLS).map(function (x) { return '<option' + (a.skill === x ? " selected" : "") + ">" + x + "</option>"; }).join("") +
+            skillSelectHtml(a.skill) +
           "</select></div>" +
           '<div class="field"><label>对应专业</label><input data-af="profession" data-aid="' + a.id + '" value="' + esc(a.profession || "") + '"></div>' +
           '<div class="field"><label>武器伤害</label><input type="number" data-af="weaponDamage" data-aid="' + a.id + '" value="' + (a.weaponDamage || 0) + '"></div>' +
@@ -470,12 +581,121 @@
     });
   }
 
+  function findPool(id) {
+    return (state.energyPools || []).filter(function (p) { return p.id === id; })[0];
+  }
+
+  function readEnergy() {
+    (state.energyPools || []).forEach(function (p) {
+      document.querySelectorAll('[data-pid="' + p.id + '"]').forEach(function (el) {
+        var f = el.getAttribute("data-pf");
+        if (!f) return;
+        if (el.type === "checkbox") p[f] = el.checked;
+        else if (el.type === "number") p[f] = el.value === "" ? 0 : Number(el.value);
+        else p[f] = el.value;
+      });
+    });
+  }
+
+  function renderEnergy(result) {
+    var box = $("pool-list");
+    if (!box) return;
+    state.energyPools = state.energyPools || [];
+    if (!state.energyPools.length) {
+      box.innerHTML = '<p class="muted">还没有能量池。可添加灵力、魔力、精力等，用于计算上限与回复。</p>';
+      return;
+    }
+    var byName = {};
+    (result && result.energyPools ? result.energyPools : []).forEach(function (p) {
+      byName[p.pool.id] = p;
+    });
+    box.innerHTML = state.energyPools.map(function (p) {
+      var computed = byName[p.id];
+      return '<div class="entry-card"><div class="entry-body">' +
+        '<div class="grid-2">' +
+          '<div class="field"><label>名称</label><input data-pf="name" data-pid="' + p.id + '" value="' + esc(p.name || "") + '"></div>' +
+          '<div class="field"><label>模板</label><select data-pf="template" data-pid="' + p.id + '">' +
+            W.ENERGY_TEMPLATES.map(function (t) {
+              return '<option value="' + t.id + '"' + (p.template === t.id ? " selected" : "") + ">" + t.name + "</option>";
+            }).join("") +
+          "</select></div>" +
+          '<div class="field"><label>关键属性一</label><select data-pf="attr1" data-pid="' + p.id + '">' +
+            W.ATTRS.map(function (a) { return '<option' + (p.attr1 === a ? " selected" : "") + ">" + a + "</option>"; }).join("") +
+          "</select></div>" +
+          '<div class="field"><label>关键属性二</label><select data-pf="attr2" data-pid="' + p.id + '">' +
+            W.ATTRS.map(function (a) { return '<option' + (p.attr2 === a ? " selected" : "") + ">" + a + "</option>"; }).join("") +
+          "</select></div>" +
+          '<div class="field"><label>基础除数（属性之和÷此数）</label><input type="number" data-pf="divisor" data-pid="' + p.id + '" value="' + (p.divisor || 4) + '"></div>' +
+          '<div class="field"><label>分类</label><select data-pf="category" data-pid="' + p.id + '">' +
+            '<option value="generic"' + (p.category !== "special" ? " selected" : "") + ">通用能量</option>" +
+            '<option value="special"' + (p.category === "special" ? " selected" : "") + ">特殊能量</option>" +
+          "</select></div>" +
+          '<div class="field"><label>额外开启来源（每次 +5 上限）</label><input type="number" min="0" data-pf="extraOpenings" data-pid="' + p.id + '" value="' + (p.extraOpenings || 0) + '"></div>' +
+          '<div class="field"><label>能量池强化</label><select data-pf="enhanceRank" data-pid="' + p.id + '">' +
+            W.ENHANCE_RANKS.map(function (r) {
+              return '<option value="' + r.id + '"' + ((p.enhanceRank || "") === r.id ? " selected" : "") + ">" + esc(r.label) + "</option>";
+            }).join("") +
+          "</select></div>" +
+          '<div class="field"><label>额外上限</label><input type="number" data-pf="bonusCap" data-pid="' + p.id + '" value="' + (p.bonusCap || 0) + '"></div>' +
+          '<div class="field"><label>额外每小时回复</label><input type="number" data-pf="bonusHourly" data-pid="' + p.id + '" value="' + (p.bonusHourly || 0) + '"></div>' +
+          '<div class="field"><label>额外每8小时回复</label><input type="number" data-pf="bonusRest8" data-pid="' + p.id + '" value="' + (p.bonusRest8 || 0) + '"></div>' +
+        "</div>" +
+        '<div class="field"><label>备注</label><input data-pf="notes" data-pid="' + p.id + '" value="' + esc(p.notes || "") + '"></div>' +
+        (computed ? energyBoxHtml(computed) : "") +
+        '<div class="row-actions"><label class="muted"><input type="checkbox" data-pf="enabled" data-pid="' + p.id + '" ' + (p.enabled !== false ? "checked" : "") + "> 启用</label>" +
+        '<button class="btn tiny danger" data-del-pool="' + p.id + '">删除能量池</button></div>' +
+      "</div></div>";
+    }).join("");
+  }
+
+  function energyBoxHtml(p) {
+    var lines = (p.parts || []).map(function (x) {
+      return '<div class="line">' + esc(x.label) + "　" + x.value + "</div>";
+    }).join("");
+    var hLines = (p.hourlyParts || []).map(function (x) {
+      return '<div class="line">' + esc(x.label) + "　" + x.value + "</div>";
+    }).join("");
+    var rLines = (p.restParts || []).map(function (x) {
+      return '<div class="line">' + esc(x.label) + "　" + x.value + "</div>";
+    }).join("");
+    return '<div class="cap-box energy-box">' +
+      '<div class="k">' + esc(p.name) + "　上限 " + p.cap + (p.apparent && p.apparent !== "无支线" ? "　·　视同 " + p.apparent + " 级" : "") + "</div>" +
+      '<div class="stat-cards" style="margin-top:8px">' +
+        '<div class="stat-card"><div class="k">上限</div><div class="n">' + p.cap + "</div></div>" +
+        '<div class="stat-card"><div class="k">每小时回复</div><div class="n">' + p.hourly + "</div></div>" +
+        '<div class="stat-card"><div class="k">每8小时回复</div><div class="n">' + p.rest8 + "</div></div>" +
+        (p.shortNote ? '<div class="stat-card"><div class="k">短休息</div><div class="n">' + p.shortRest + '</div><div class="s">' + esc(p.shortNote) + "</div></div>" : "") +
+      "</div>" +
+      '<details class="break"><summary>构成</summary>' +
+        (lines ? '<div class="muted">上限</div>' + lines : "") +
+        (hLines ? '<div class="muted">每小时</div>' + hLines : "") +
+        (rLines ? '<div class="muted">每8小时</div>' + rLines : "") +
+      "</details></div>";
+  }
+
+  function addPool() {
+    try {
+      syncFromDom();
+      state.energyPools = state.energyPools || [];
+      var pool = W.emptyEnergyPool ? W.emptyEnergyPool("spirit") : {
+        id: W.uid("pool"), enabled: true, name: "灵力", template: "spirit",
+        category: "generic", attr1: "决心", attr2: "沉着", divisor: 4,
+        extraOpenings: 0, enhanceRank: "", bonusCap: 0, bonusHourly: 0, bonusRest8: 0, notes: ""
+      };
+      state.energyPools.push(pool);
+      renderAll();
+    } catch (err) {
+      alert("无法添加能量池：" + (err && err.message ? err.message : err));
+    }
+  }
+
   function syncFromDom() {
     if ($("info-name")) readInfo();
     readWhite();
     readOpenEntry();
     readAttacks();
     readChecks();
+    readEnergy();
     var sel = $("preset-select");
     if (sel) selectedPresetId = sel.value;
   }
@@ -537,10 +757,16 @@
     }).join("");
 
     $("sheet-skills").innerHTML = Object.keys(r.skills).filter(function (s) {
+      if (s === "手艺" || s === "表达") {
+        var hasChild = Object.keys(r.skills).some(function (n) {
+          return n.indexOf(s + "-") === 0 && r.skills[n].total;
+        });
+        if (hasChild) return false;
+      }
       return r.skills[s].total || (r.skills[s].professions || []).length;
     }).map(function (s) {
       var x = r.skills[s];
-      return '<div class="kv"><span>' + s + (x.professions.length ? "（" + x.professions.join("、") + "）" : "") +
+      return '<div class="kv"><span>' + W.formatSkillName(s) + (x.professions.length ? "（" + x.professions.join("、") + "）" : "") +
         "</span><span class='v'>" + x.total + (x.extraSuccess ? " · 附加成功 +" + x.extraSuccess : "") + "</span></div>";
     }).join("") || '<p class="muted">技能均为 0</p>';
 
@@ -564,6 +790,15 @@
     ].map(function (row) {
       return '<div class="kv"><span>' + row[0] + '</span><span class="v">' + row[1] + "</span></div>";
     }).join("");
+
+    var energyBox = $("sheet-energy");
+    if (energyBox) {
+      energyBox.innerHTML = (r.energyPools && r.energyPools.length) ? r.energyPools.map(function (p) {
+        return '<div class="kv"><span>' + esc(p.name) + (p.keyAttrs.length ? "（" + p.keyAttrs.join("+") + "）" : "") +
+          "</span><span class='v'>上限 " + p.cap + " · 每小时 " + p.hourly + " · 8小时 " + p.rest8 +
+          (p.shortRest ? " · 短休息 " + p.shortRest : "") + "</span></div>";
+      }).join("") : '<p class="muted">未设置能量池</p>';
+    }
 
     $("sheet-checks").innerHTML = (function () {
       var html = W.SHEET_CHECK_IDS.map(function (id) {
@@ -634,7 +869,20 @@
       consume: "",
       conditional: false,
       miscType: "",
-      miscText: ""
+      miscText: "",
+      valueMode: "fixed",
+      valueSrc: "attr",
+      valueAttr: "风度",
+      valueSkill: "",
+      valueMult: 1,
+      capMode: "none",
+      capAttr: "风度",
+      capMult: 3,
+      capValue: 0,
+      replaceFrom: "决心",
+      replaceTo: "感知",
+      energyPart: "cap",
+      energyName: ""
     });
     ui.openEntry = eid;
     renderAll();
@@ -743,6 +991,7 @@
         if (!state.entries) state.entries = [];
         if (!state.attacks) state.attacks = [];
         if (!state.power) state.power = W.emptyPower();
+        if (!state.energyPools) state.energyPools = [];
         selectedPresetId = id;
         ui.openEntry = null;
         renderAll();
@@ -799,7 +1048,7 @@
 
     document.body.addEventListener("change", function (ev) {
       var t = ev.target;
-      if (t.closest("#pane-white") || t.closest("#pane-info") || t.closest("#pane-attacks") || t.closest("#pane-entries") || t.closest("#pane-checks") || t.closest("#cond-bar")) {
+      if (t.closest("#pane-white") || t.closest("#pane-info") || t.closest("#pane-attacks") || t.closest("#pane-entries") || t.closest("#pane-checks") || t.closest("#pane-energy") || t.closest("#cond-bar")) {
         if (t.hasAttribute("data-cond-e")) {
           var e = findEntry(t.getAttribute("data-cond-e"));
           if (e) {
@@ -810,7 +1059,23 @@
         } else {
           syncFromDom();
         }
-        if (t.hasAttribute("data-bk") || t.hasAttribute("data-en") || t.closest("#pane-attacks") || t.closest("#pane-checks")) {
+        if (t.getAttribute("data-pf") === "template") {
+          var pool = findPool(t.getAttribute("data-pid"));
+          if (pool) {
+            var tpl = W.energyTemplate(pool.template);
+            pool.attr1 = tpl.attr1;
+            pool.attr2 = tpl.attr2;
+            pool.divisor = tpl.divisor || 4;
+            pool.category = tpl.category || "generic";
+            if (tpl.note) pool.notes = tpl.note;
+            var tplNames = W.ENERGY_TEMPLATES.map(function (x) { return x.name; });
+            if (!pool.name || tplNames.indexOf(pool.name) !== -1) pool.name = tpl.name;
+          }
+        }
+        var rebuild = t.hasAttribute("data-bk") || t.hasAttribute("data-en") || t.hasAttribute("data-bvm") ||
+          t.getAttribute("data-bf") === "valueSrc" || t.getAttribute("data-bf") === "capMode" ||
+          t.closest("#pane-attacks") || t.closest("#pane-checks") || t.closest("#pane-energy");
+        if (rebuild) {
           if (t.hasAttribute("data-en")) {
             var en = findEntry(t.getAttribute("data-en"));
             if (en) en.enabled = t.checked;
@@ -825,7 +1090,11 @@
     });
 
     document.body.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-toggle-entry],[data-add-bonus],[data-del-entry],[data-del-bonus],[data-del-atk],[data-del-sub],[data-del-check]");
+      if (ev.target.closest("#btn-add-pool")) {
+        addPool();
+        return;
+      }
+      var t = ev.target.closest("[data-toggle-entry],[data-add-bonus],[data-del-entry],[data-del-bonus],[data-del-atk],[data-del-sub],[data-del-check],[data-del-pool]");
       if (!t) return;
       if (t.hasAttribute("data-toggle-entry")) {
         if (ev.target.matches("input")) return;
@@ -853,6 +1122,10 @@
         syncFromDom();
         state.checks = (state.checks || []).filter(function (c) { return c.id !== t.getAttribute("data-del-check"); });
         renderAll();
+      } else if (t.hasAttribute("data-del-pool")) {
+        syncFromDom();
+        state.energyPools = (state.energyPools || []).filter(function (p) { return p.id !== t.getAttribute("data-del-pool"); });
+        renderAll();
       } else if (t.hasAttribute("data-del-sub")) {
         syncFromDom();
         state.white.subskills.splice(Number(t.getAttribute("data-del-sub")), 1);
@@ -862,15 +1135,21 @@
   }
 
   function init() {
-    restore();
-    if (!state.info || !state.white) state = W.emptyCharacter();
-    if (!state.entries) state.entries = [];
-    if (!state.attacks) state.attacks = [];
-    if (!state.checks) state.checks = [];
-    if (!state.power) state.power = W.emptyPower();
-    bind();
-    setTab("white");
-    renderAll();
+    try {
+      restore();
+      if (!state.info || !state.white) state = W.emptyCharacter();
+      if (!state.entries) state.entries = [];
+      if (!state.attacks) state.attacks = [];
+      if (!state.checks) state.checks = [];
+      if (!state.power) state.power = W.emptyPower();
+      if (!state.energyPools) state.energyPools = [];
+      bind();
+      setTab("white");
+      renderAll();
+    } catch (err) {
+      alert("计算器初始化失败：" + (err && err.message ? err.message : err));
+      throw err;
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);
