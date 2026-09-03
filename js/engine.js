@@ -267,6 +267,7 @@
   }
 
   function compactRank(n) {
+    n = Math.floor(Number(n) || 0);
     if (n <= 0) return n === 0 ? "无支线" : String(n) + "D";
     var units = [["SS", 243], ["S", 81], ["A", 27], ["B", 9], ["C", 3], ["D", 1]];
     var s = "";
@@ -280,7 +281,13 @@
     return s || "无支线";
   }
 
-  /* ST指南：建卡战斗力约 1。使用中的支线折成 D，再计 (分数-D个数×1000)/1500（可负）与 经验/15（向下取整）。强度为 ND，再加 1 点初始。 */
+  function fmtPower(n) {
+    var x = Number(n);
+    if (!isFinite(x)) return "0.00";
+    return (Math.round(x * 100) / 100).toFixed(2);
+  }
+
+  /* ST指南：建卡战斗力约 1。使用中的支线折成 D，再计 (分数-D个数×1000)/1500（可负，保留小数）与 经验/15（向下取整）。强度为 ND，再加 1 点初始。 */
   function combatPower(p) {
     p = p || emptyPower();
     var branchD = (Number(p.d) || 0)
@@ -291,14 +298,14 @@
       + (Number(p.ss) || 0) * 243;
     var points = Number(p.points) || 0;
     var xp = Number(p.xp) || 0;
-    var fromPoints = Math.floor((points - branchD * 1000) / 1500);
+    var fromPoints = (points - branchD * 1000) / 1500;
     var fromXp = Math.floor(xp / 15);
     var strengthD = branchD + fromPoints + fromXp;
     var nearest = Math.round(strengthD / 9) * 9;
     var near = "";
-    if (strengthD > 0 && nearest > 0 && nearest !== strengthD && Math.abs(nearest - strengthD) <= 4) {
-      near = "接近 " + compactRank(nearest) + "（" + nearest + "D）";
-    } else if (strengthD > 0 && strengthD % 3 === 0) {
+    if (strengthD > 0 && nearest > 0 && Math.abs(nearest - strengthD) > 0.005 && Math.abs(nearest - strengthD) <= 4) {
+      near = "接近 " + compactRank(nearest) + "（" + fmtPower(nearest) + "D）";
+    } else if (strengthD > 0 && Math.abs(strengthD % 3) < 0.005) {
       near = compactRank(strengthD);
     }
     return {
@@ -311,6 +318,133 @@
       compact: compactRank(Math.max(0, strengthD)),
       near: near
     };
+  }
+
+  function clampAgain(n) {
+    var a = Number(n);
+    if (!isFinite(a)) a = 10;
+    if (a < 8) a = 8;
+    if (a > 10) a = 10;
+    return a;
+  }
+
+  function rollDie(sides, rng) {
+    var r = typeof rng === "function" ? rng : Math.random;
+    var n = Number(sides) || 10;
+    if (n < 2) n = 2;
+    return 1 + Math.floor(r() * n);
+  }
+
+  /* 解析 ww16+1 / ww16a8+1 / rd10+1 / 4d10+1 */
+  function parseDiceExpr(s) {
+    var raw = String(s || "").trim().replace(/\s+/g, "").toLowerCase();
+    if (!raw) return { error: "请输入表达式，例如 ww16+1" };
+    var ww = raw.match(/^ww(\d+)(?:a(\d+))?(?:([+-]\d+))?$/);
+    if (ww) {
+      return {
+        kind: "ww",
+        pool: Number(ww[1]),
+        again: ww[2] != null ? clampAgain(ww[2]) : 10,
+        extra: ww[3] ? Number(ww[3]) : 0,
+        expr: raw
+      };
+    }
+    var rd = raw.match(/^rd(\d+)(?:([+-]\d+))?$/);
+    if (rd) {
+      return {
+        kind: "rd",
+        count: 1,
+        sides: Number(rd[1]),
+        extra: rd[2] ? Number(rd[2]) : 0,
+        expr: raw
+      };
+    }
+    var nd = raw.match(/^(\d+)d(\d+)(?:([+-]\d+))?$/);
+    if (nd) {
+      return {
+        kind: "rd",
+        count: Number(nd[1]),
+        sides: Number(nd[2]),
+        extra: nd[3] ? Number(nd[3]) : 0,
+        expr: raw
+      };
+    }
+    return { error: "无法解析「" + raw + "」。可用 ww16+1、ww16a8+1、rd10+1" };
+  }
+
+  /* 核心规则：8/9/10 各 1 成功；达到加骰阈值再掷；附加成功仅在掷骰成功数 > 0 时加入。 */
+  function rollWw(pool, again, extra, rng) {
+    pool = Math.max(0, Math.floor(Number(pool) || 0));
+    again = clampAgain(again == null ? 10 : again);
+    extra = Number(extra) || 0;
+    var dice = [];
+    var pending = pool;
+    var guard = 0;
+    while (pending > 0 && guard < 400) {
+      pending -= 1;
+      guard += 1;
+      var face = rollDie(10, rng);
+      var success = face >= 8;
+      var explode = face >= again;
+      dice.push({ face: face, success: success, explode: explode });
+      if (explode) pending += 1;
+    }
+    var rolledSuccess = 0;
+    dice.forEach(function (d) { if (d.success) rolledSuccess += 1; });
+    var extraApplied = extra > 0 ? (rolledSuccess > 0 ? extra : 0) : extra;
+    return {
+      kind: "ww",
+      pool: pool,
+      again: again,
+      extra: extra,
+      dice: dice,
+      rolledSuccess: rolledSuccess,
+      extraApplied: extraApplied,
+      total: rolledSuccess + extraApplied,
+      botched: rolledSuccess <= 0
+    };
+  }
+
+  /* 自然骰：无加骰。d10 机运：10 视为 1 成功，1 有负面。附加成功仅在已有成功时加入。 */
+  function rollRd(count, sides, extra, rng) {
+    count = Math.max(1, Math.floor(Number(count) || 1));
+    sides = Math.max(2, Math.floor(Number(sides) || 10));
+    extra = Number(extra) || 0;
+    var dice = [];
+    var i;
+    for (i = 0; i < count; i++) {
+      var face = rollDie(sides, rng);
+      dice.push({
+        face: face,
+        success: sides === 10 && face === 10,
+        fumble: face === 1
+      });
+    }
+    var rolledSuccess = 0;
+    var sum = 0;
+    dice.forEach(function (d) {
+      sum += d.face;
+      if (d.success) rolledSuccess += 1;
+    });
+    var extraApplied = extra > 0 ? (rolledSuccess > 0 ? extra : 0) : extra;
+    return {
+      kind: "rd",
+      count: count,
+      sides: sides,
+      extra: extra,
+      dice: dice,
+      sum: sum,
+      rolledSuccess: rolledSuccess,
+      extraApplied: extraApplied,
+      total: rolledSuccess + extraApplied,
+      botched: rolledSuccess <= 0
+    };
+  }
+
+  function rollParsed(parsed, rng) {
+    if (!parsed || parsed.error) return parsed;
+    if (parsed.kind === "ww") return rollWw(parsed.pool, parsed.again, parsed.extra, rng);
+    return rollRd(parsed.count, parsed.sides, parsed.extra, rng);
   }
 
   function allCheckDefs(ch) {
@@ -1359,6 +1493,12 @@
     skillSelectNames: skillSelectNames,
     combatPower: combatPower,
     compactRank: compactRank,
+    fmtPower: fmtPower,
+    parseDiceExpr: parseDiceExpr,
+    rollWw: rollWw,
+    rollRd: rollRd,
+    rollParsed: rollParsed,
+    clampAgain: clampAgain,
     allCheckDefs: allCheckDefs,
     damageCapInfo: damageCapInfo,
     compute: compute,

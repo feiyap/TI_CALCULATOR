@@ -1,6 +1,6 @@
 {
   "name": "南莉央 第二场",
-  "savedAt": "2026-09-02T17:42:24",
+  "savedAt": "2026-09-03T00:51:04",
   "character": {
     "version": 1,
     "info": {
@@ -24,10 +24,10 @@
         "耐力": 3,
         "智力": 2,
         "感知": 3,
-        "决心": 4,
+        "决心": 2,
         "风度": 4,
         "操控": 2,
-        "沉着": 2
+        "沉着": 4
       },
       "skills": {
         "运动": {
@@ -123,7 +123,9 @@
           "parent": "表达",
           "name": "神乐",
           "rank": 3,
-          "professions": []
+          "professions": [
+            "神乐"
+          ]
         }
       ],
       "volume": 5
@@ -140,22 +142,12 @@
         "contest": "竞争"
       },
       {
-        "id": "chk_stealth",
-        "enabled": true,
-        "name": "潜行",
-        "attr": "敏捷",
-        "attr2": "",
-        "skill": "躲藏",
-        "profession": "潜行",
-        "contest": "对抗"
-      },
-      {
         "id": "chk_eund5pbe",
         "enabled": true,
         "name": "八乙女之舞",
         "attr": "风度",
         "attr2": "",
-        "skill": "交际",
+        "skill": "表达-神乐",
         "profession": "神乐",
         "contest": "竞争"
       }
@@ -366,7 +358,8 @@
             "consume": "",
             "conditional": false,
             "miscType": "",
-            "miscText": ""
+            "miscText": "",
+            "valueMode": "fixed"
           },
           {
             "id": "b7",
@@ -384,9 +377,11 @@
             "consume": "",
             "conditional": false,
             "miscType": "fastHeal",
-            "miscText": "快速医疗 1"
+            "miscText": "快速医疗 1",
+            "valueMode": "fixed"
           }
-        ]
+        ],
+        "levelValue": ""
       },
       {
         "id": "e_domain",
@@ -522,7 +517,7 @@
         "bonuses": [
           {
             "id": "b13",
-            "enabled": true,
+            "enabled": false,
             "type": "盔甲防御",
             "kind": "defense",
             "stackMode": "obtain",
@@ -538,11 +533,12 @@
             "consume": "",
             "conditional": false,
             "miscType": "",
-            "miscText": ""
+            "miscText": "",
+            "valueMode": "fixed"
           },
           {
             "id": "b14",
-            "enabled": true,
+            "enabled": false,
             "type": "无名",
             "kind": "misc",
             "stackMode": "obtain",
@@ -556,9 +552,11 @@
             "consume": "",
             "conditional": false,
             "miscType": "keyword",
-            "miscText": "【防弹】"
+            "miscText": "【防弹】",
+            "valueMode": "fixed"
           }
-        ]
+        ],
+        "levelValue": ""
       },
       {
         "id": "e_ring",
@@ -621,6 +619,7 @@
             "applies": [
               "allAttacks",
               "defense",
+              "allSaves",
               "check:willSave",
               "check:reflex",
               "check:fortitude"
@@ -633,9 +632,11 @@
             "consume": "",
             "conditional": false,
             "miscType": "",
-            "miscText": ""
+            "miscText": "",
+            "valueMode": "fixed"
           }
-        ]
+        ],
+        "levelValue": ""
       },
       {
         "id": "e_lvkapcu1",
@@ -665,7 +666,8 @@
             "consume": "",
             "conditional": false,
             "miscType": "",
-            "miscText": ""
+            "miscText": "",
+            "valueMode": "fixed"
           },
           {
             "id": "b_ul6bel46",
@@ -673,7 +675,7 @@
             "type": "修行",
             "kind": "checkDp",
             "stackMode": "obtain",
-            "value": 6,
+            "value": 4,
             "applies": [
               "attr:风度"
             ],
@@ -685,9 +687,11 @@
             "consume": "",
             "conditional": false,
             "miscType": "",
-            "miscText": ""
+            "miscText": "",
+            "valueMode": "fixed"
           }
-        ]
+        ],
+        "levelValue": ""
       },
       {
         "id": "e_rftr80bs",
@@ -761,7 +765,7 @@
             "applies": [
               "allChecks"
             ],
-            "attr": "决心",
+            "attr": "沉着",
             "skill": "运动",
             "derived": "hp",
             "defensePart": "other",
@@ -769,9 +773,169 @@
             "consume": "",
             "conditional": false,
             "miscType": "",
-            "miscText": ""
+            "miscText": "",
+            "valueMode": "fixed"
           }
-        ]
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_2u9eho7q",
+        "category": "技艺",
+        "name": "精神统一",
+        "rank": "",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_dndg2sss",
+            "enabled": true,
+            "type": "修行",
+            "kind": "attrReplace",
+            "stackMode": "obtain",
+            "value": 1,
+            "applies": [
+              "allWill"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          },
+          {
+            "id": "b_51tw9o4y",
+            "enabled": true,
+            "type": "修行",
+            "kind": "attrReplace",
+            "stackMode": "obtain",
+            "value": 1,
+            "applies": [
+              "check:reflex"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "敏捷",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          },
+          {
+            "id": "b_nrcehor6",
+            "enabled": true,
+            "type": "修行",
+            "kind": "attrReplace",
+            "stackMode": "obtain",
+            "value": 1,
+            "applies": [
+              "check:fortitude"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "耐力",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_8vtb15pr",
+        "category": "能力组",
+        "name": "巫女",
+        "rank": "D",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_3l49llxk",
+            "enabled": true,
+            "type": "神圣",
+            "kind": "defense",
+            "stackMode": "obtain",
+            "value": 1,
+            "applies": [
+              "allChecks"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "formula",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "entryLevel",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
       }
     ],
     "attacks": [
@@ -800,6 +964,24 @@
       "ss": 0,
       "points": 4700,
       "xp": 12
-    }
+    },
+    "energyPools": [
+      {
+        "id": "pool_7q9tmb6y",
+        "enabled": true,
+        "name": "灵力",
+        "template": "spirit",
+        "category": "generic",
+        "attr1": "决心",
+        "attr2": "沉着",
+        "divisor": 4,
+        "extraOpenings": 0,
+        "enhanceRank": "",
+        "bonusCap": 0,
+        "bonusHourly": 0,
+        "bonusRest8": 0,
+        "notes": "消耗称灵感疲劳。长休息回复关键属性较低者。"
+      }
+    ]
   }
 }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>无限恐怖 · 角色加值计算器</title>
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
   <header class="app-header">
@@ -35,6 +35,7 @@
         <button class="tab" data-tab="energy" type="button">能量池</button>
         <button class="tab" data-tab="checks">检定</button>
         <button class="tab" data-tab="attacks">攻击预设</button>
+        <button class="tab" data-tab="dice">骰子试试</button>
       </div>
 
       <div id="pane-info" class="panel-body hidden">
@@ -113,6 +114,58 @@
         <div class="row-actions"><button class="btn primary" id="btn-add-attack">添加攻击预设</button></div>
         <div id="attack-list"></div>
       </div>
+
+      <div id="pane-dice" class="panel-body hidden">
+        <p class="muted">按《核心规则》：8/9/10 各计 1 成功；默认 10 加骰（可改为 9 或 8，最低 8）；附加成功只在掷骰成功数大于 0 时加入。自然骰（rd）无加骰；d10 机运时 10 视为 1 成功、1 有负面。</p>
+        <div class="dice-expr-row">
+          <div class="field" style="flex:1">
+            <label>表达式</label>
+            <input id="dice-expr" placeholder="ww16+1　或　ww16a8+1　或　rd10+1" value="ww16+1">
+          </div>
+          <button type="button" class="btn primary" id="btn-dice-expr">投掷</button>
+        </div>
+        <div class="row-actions">
+          <button type="button" class="btn tiny" data-dice-fill="ww16+1">ww16+1</button>
+          <button type="button" class="btn tiny" data-dice-fill="ww16a8+1">ww16a8+1</button>
+          <button type="button" class="btn tiny" data-dice-fill="rd10+1">rd10+1</button>
+        </div>
+
+        <div class="dice-modes">
+          <div class="dice-card">
+            <div class="section-title" style="margin-top:0">ww 投掷</div>
+            <p class="muted">例：ww16+1 = DP 16、默认 10 加骰、附加成功 +1。</p>
+            <div class="grid-2">
+              <div class="field"><label>DP</label><input type="number" id="dice-ww-pool" min="1" max="200" value="16"></div>
+              <div class="field"><label>附加成功</label><input type="number" id="dice-ww-extra" value="1"></div>
+            </div>
+            <div class="row-actions"><button type="button" class="btn primary" id="btn-dice-ww">投 ww</button></div>
+          </div>
+          <div class="dice-card">
+            <div class="section-title" style="margin-top:0">ww 加骰</div>
+            <p class="muted">例：ww16a8+1 = DP 16、8 加骰、附加成功 +1。</p>
+            <div class="grid-3">
+              <div class="field"><label>DP</label><input type="number" id="dice-wwa-pool" min="1" max="200" value="16"></div>
+              <div class="field"><label>加骰</label><input type="number" id="dice-wwa-again" min="8" max="10" value="8"></div>
+              <div class="field"><label>附加成功</label><input type="number" id="dice-wwa-extra" value="1"></div>
+            </div>
+            <div class="row-actions"><button type="button" class="btn primary" id="btn-dice-wwa">投 ww 加骰</button></div>
+          </div>
+          <div class="dice-card">
+            <div class="section-title" style="margin-top:0">rd 投掷</div>
+            <p class="muted">例：rd10+1 = 1 颗十面骰（自然骰，无加骰）、附加成功 +1。</p>
+            <div class="grid-3">
+              <div class="field"><label>面数</label><input type="number" id="dice-rd-sides" min="2" max="100" value="10"></div>
+              <div class="field"><label>颗数</label><input type="number" id="dice-rd-count" min="1" max="40" value="1"></div>
+              <div class="field"><label>附加成功</label><input type="number" id="dice-rd-extra" value="1"></div>
+            </div>
+            <div class="row-actions"><button type="button" class="btn primary" id="btn-dice-rd">投 rd</button></div>
+          </div>
+        </div>
+
+        <div id="dice-result" class="dice-result muted">还没有投过。输入表达式或用上方按钮试试。</div>
+        <div class="section-title">投掷记录</div>
+        <div id="dice-history" class="dice-history muted">暂无记录</div>
+      </div>
     </section>
 
     <section class="panel">
@@ -157,7 +210,7 @@
     预设保存在本目录下的 presets 文件夹。请用「启动计算器.bat」打开页面，保存才会写入该文件夹。
   </p>
 
-  <script src="js/engine.js?v=3"></script>
-  <script src="js/ui.js?v=3"></script>
+  <script src="js/engine.js?v=4"></script>
+  <script src="js/ui.js?v=4"></script>
 </body>
 </html>

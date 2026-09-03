@@ -7,6 +7,7 @@
   var selectedPresetId = "";
   var folderApi = false;
   var presetList = [];
+  var diceHistory = [];
 
   function $(id) { return document.getElementById(id); }
   function esc(s) {
@@ -147,12 +148,12 @@
     if (!box) return;
     var r = W.combatPower(state.power || W.emptyPower());
     box.innerHTML =
-      '<div class="n">' + r.total + '<span class="s"> 累计战斗力</span></div>' +
+      '<div class="n">' + W.fmtPower(r.total) + '<span class="s"> 累计战斗力</span></div>' +
       '<div class="line">支线折合 ' + r.branchD + "D" +
-      "　·　分数折算 (" + (state.power && state.power.points || 0) + " − " + r.branchD + "×1000) / 1500 = " + r.fromPoints +
-      "　·　XP 折算 " + Math.floor((state.power && state.power.xp || 0) / 15) + "</div>" +
-      '<div class="line">资源强度 ' + r.strengthD + "D" + (r.near ? "（" + esc(r.near) + "）" : "") +
-      "　+　初始 1　=　" + r.total + "</div>";
+      "　·　分数折算 (" + (state.power && state.power.points || 0) + " − " + r.branchD + "×1000) / 1500 = " + W.fmtPower(r.fromPoints) +
+      "　·　XP 折算 " + r.fromXp + "（经验/15 向下取整）</div>" +
+      '<div class="line">资源强度 ' + W.fmtPower(r.strengthD) + "D" + (r.near ? "（" + esc(r.near) + "）" : "") +
+      "　+　初始 1　=　" + W.fmtPower(r.total) + "</div>";
   }
 
   function renderWhite() {
@@ -785,7 +786,7 @@
       ["基础防御", d.baseDefense.total],
       ["累计战斗力", (function () {
         var p = W.combatPower(state.power || W.emptyPower());
-        return p.total + "（资源强度 " + p.strengthD + "D + 初始 1）";
+        return W.fmtPower(p.total) + "（资源强度 " + W.fmtPower(p.strengthD) + "D + 初始 1）";
       })()]
     ].map(function (row) {
       return '<div class="kv"><span>' + row[0] + '</span><span class="v">' + row[1] + "</span></div>";
@@ -828,6 +829,132 @@
       (r.misc.length ? '<div class="section-title">其他</div>' + r.misc.map(function (m) {
         return '<div class="line">' + esc(m.sourceName) + " · " + esc(m.text || (m.miscType + " " + m.value)) + "</div>";
       }).join("") : "");
+  }
+
+  function diceLabel(result, expr) {
+    if (result.kind === "ww") {
+      return "ww" + result.pool + (result.again !== 10 ? "a" + result.again : "") +
+        (result.extra ? (result.extra > 0 ? "+" + result.extra : String(result.extra)) : "");
+    }
+    if (result.count === 1) {
+      return "rd" + result.sides + (result.extra ? (result.extra > 0 ? "+" + result.extra : String(result.extra)) : "");
+    }
+    return result.count + "d" + result.sides +
+      (result.extra ? (result.extra > 0 ? "+" + result.extra : String(result.extra)) : "");
+  }
+
+  function diceFacesHtml(result) {
+    return (result.dice || []).map(function (d) {
+      var cls = "die";
+      if (result.kind === "ww") {
+        cls += d.success ? " ok" : " fail";
+        if (d.explode) cls += " boom";
+      } else {
+        if (d.success) cls += " ok";
+        if (d.fumble) cls += " fumble";
+      }
+      return '<span class="' + cls + '">' + d.face + (d.explode ? "↻" : "") + "</span>";
+    }).join("");
+  }
+
+  function showDiceResult(result, expr) {
+    var box = $("dice-result");
+    var hist = $("dice-history");
+    if (!box) return;
+    if (result && result.error) {
+      box.className = "dice-result";
+      box.innerHTML = '<div class="warn">' + esc(result.error) + "</div>";
+      return;
+    }
+    var label = expr || diceLabel(result);
+    var extraNote = result.extra
+      ? (result.extraApplied === result.extra
+        ? "附加成功 +" + result.extraApplied
+        : "附加成功未计入（掷骰成功数为 0）")
+      : "无附加成功";
+    var sub;
+    if (result.kind === "ww") {
+      sub = "掷骰成功 " + result.rolledSuccess + "　·　" + extraNote + "　·　" + result.again + " 加骰";
+    } else {
+      sub = "骰面合计 " + result.sum + "　·　机运成功 " + result.rolledSuccess + "　·　" + extraNote;
+      if (result.sides === 10 && result.count === 1) {
+        sub += result.dice[0].success ? "　·　机运较好" : (result.dice[0].fumble ? "　·　结果为 1，可能有负面" : "");
+      }
+    }
+    box.className = "dice-result";
+    box.innerHTML =
+      '<div class="s">' + esc(label) + "</div>" +
+      '<div class="n">' + result.total + '<span class="s"> 成功数</span></div>' +
+      '<div class="s">' + esc(sub) + "</div>" +
+      '<div class="dice-faces">' + diceFacesHtml(result) + "</div>";
+    diceHistory.unshift({ label: label, total: result.total, sub: sub, faces: (result.dice || []).map(function (d) { return d.face; }) });
+    if (diceHistory.length > 20) diceHistory.length = 20;
+    if (hist) {
+      hist.className = "dice-history";
+      hist.innerHTML = diceHistory.map(function (h) {
+        return '<div class="line">' + esc(h.label) + " → " + h.total + "　[" + h.faces.join(" ") + "]</div>";
+      }).join("");
+    }
+  }
+
+  function runDiceExpr() {
+    var expr = $("dice-expr") ? $("dice-expr").value : "";
+    var parsed = W.parseDiceExpr(expr);
+    if (parsed.error) {
+      showDiceResult(parsed);
+      return;
+    }
+    showDiceResult(W.rollParsed(parsed), parsed.expr);
+  }
+
+  function bindDice() {
+    if ($("btn-dice-expr")) $("btn-dice-expr").addEventListener("click", runDiceExpr);
+    if ($("dice-expr")) {
+      $("dice-expr").addEventListener("keydown", function (ev) {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          runDiceExpr();
+        }
+      });
+    }
+    if ($("btn-dice-ww")) {
+      $("btn-dice-ww").addEventListener("click", function () {
+        var pool = val($("dice-ww-pool"), 16);
+        var extra = val($("dice-ww-extra"), 0);
+        var expr = "ww" + pool + (extra ? (extra > 0 ? "+" + extra : String(extra)) : "");
+        if ($("dice-expr")) $("dice-expr").value = expr;
+        showDiceResult(W.rollWw(pool, 10, extra), expr);
+      });
+    }
+    if ($("btn-dice-wwa")) {
+      $("btn-dice-wwa").addEventListener("click", function () {
+        var pool = val($("dice-wwa-pool"), 16);
+        var again = val($("dice-wwa-again"), 8);
+        var extra = val($("dice-wwa-extra"), 0);
+        var expr = "ww" + pool + "a" + W.clampAgain(again) + (extra ? (extra > 0 ? "+" + extra : String(extra)) : "");
+        if ($("dice-expr")) $("dice-expr").value = expr;
+        showDiceResult(W.rollWw(pool, again, extra), expr);
+      });
+    }
+    if ($("btn-dice-rd")) {
+      $("btn-dice-rd").addEventListener("click", function () {
+        var sides = val($("dice-rd-sides"), 10);
+        var count = val($("dice-rd-count"), 1);
+        var extra = val($("dice-rd-extra"), 0);
+        var extraBit = extra ? (extra > 0 ? "+" + extra : String(extra)) : "";
+        var expr = count === 1 ? ("rd" + sides + extraBit) : (count + "d" + sides + extraBit);
+        if ($("dice-expr")) $("dice-expr").value = expr;
+        showDiceResult(W.rollRd(count, sides, extra), expr);
+      });
+    }
+    document.querySelectorAll("[data-dice-fill]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var expr = btn.getAttribute("data-dice-fill");
+        if ($("dice-expr")) $("dice-expr").value = expr;
+        var parsed = W.parseDiceExpr(expr);
+        showDiceResult(W.rollParsed(parsed), parsed.expr || expr);
+      });
+    });
   }
 
   function addEntry() {
@@ -1144,6 +1271,7 @@
       if (!state.power) state.power = W.emptyPower();
       if (!state.energyPools) state.energyPools = [];
       bind();
+      bindDice();
       setTab("white");
       renderAll();
     } catch (err) {

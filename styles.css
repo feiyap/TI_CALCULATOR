@@ -61,7 +61,7 @@ button { cursor: pointer; }
 }
 .panel-body { padding: 12px 16px 16px; }
 
-.tabs { display: flex; gap: 6px; padding: 10px 16px 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px 0; }
 .tab {
   background: transparent; border: 1px solid transparent; color: var(--muted);
   padding: 6px 10px; border-radius: 6px 6px 0 0;
@@ -204,3 +204,28 @@ details.break summary { cursor: pointer; color: var(--muted); font-size: 12px; }
   background: #f7f1e4; color: #111; border: 1px solid var(--line);
   border-radius: 5px; padding: 6px 8px; min-width: 140px;
 }
+
+.dice-expr-row { display: flex; align-items: flex-end; gap: 8px; margin: 8px 0; }
+.dice-modes { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 12px 0; }
+.dice-card {
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+}
+.dice-result {
+  margin-top: 12px; background: #16130f; border: 1px solid var(--line);
+  border-radius: 8px; padding: 12px;
+}
+.dice-result .n { font-size: 28px; font-family: var(--mono); color: var(--gold-2); }
+.dice-result .s { font-size: 13px; color: var(--muted); }
+.dice-faces { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.die {
+  min-width: 36px; height: 36px; padding: 0 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); border-radius: 6px;
+  font-family: var(--mono); font-size: 16px; background: var(--paper-2);
+}
+.die.ok { border-color: var(--gold); color: var(--gold-2); background: #3d3118; }
+.die.boom { box-shadow: 0 0 0 1px var(--gold); }
+.die.fail { opacity: 0.55; }
+.die.fumble { border-color: var(--danger); color: #e8b0a6; }
+.dice-history { font-size: 12px; font-family: var(--mono); max-height: 220px; overflow: auto; }
+.dice-history .line { padding: 3px 0; border-bottom: 1px dashed #3a3228; }
