@@ -1,0 +1,574 @@
+{
+  "name": "阿飞 第一场",
+  "savedAt": "2026-09-10T11:30:29",
+  "character": {
+    "version": 1,
+    "info": {
+      "player": "",
+      "name": "阿飞",
+      "gender": "",
+      "age": "",
+      "height": "",
+      "race": "人类",
+      "language": "",
+      "appearance": "",
+      "personality": "",
+      "summary": "",
+      "virtue": "",
+      "vice": ""
+    },
+    "white": {
+      "attrs": {
+        "力量": 3,
+        "敏捷": 3,
+        "耐力": 3,
+        "智力": 2,
+        "感知": 2,
+        "决心": 2,
+        "风度": 2,
+        "操控": 2,
+        "沉着": 2
+      },
+      "skills": {
+        "运动": {
+          "rank": 3,
+          "professions": [
+            "自我保护",
+            "投掷轻武器",
+            "逃脱"
+          ]
+        },
+        "肉搏": {
+          "rank": 0,
+          "professions": []
+        },
+        "驾驶": {
+          "rank": 0,
+          "professions": []
+        },
+        "枪械": {
+          "rank": 0,
+          "professions": []
+        },
+        "手上功夫": {
+          "rank": 0,
+          "professions": []
+        },
+        "躲藏": {
+          "rank": 1,
+          "professions": [
+            "隐藏"
+          ]
+        },
+        "求生": {
+          "rank": 3,
+          "professions": [
+            "自我保护"
+          ]
+        },
+        "白刃": {
+          "rank": 5,
+          "professions": [
+            "弯刀",
+            "白刃格挡",
+            "攻击特定部位"
+          ]
+        },
+        "学识": {
+          "rank": 0,
+          "professions": []
+        },
+        "电脑": {
+          "rank": 0,
+          "professions": []
+        },
+        "调查": {
+          "rank": 1,
+          "professions": [
+            "侦察"
+          ]
+        },
+        "医学": {
+          "rank": 0,
+          "professions": []
+        },
+        "神秘学": {
+          "rank": 0,
+          "professions": []
+        },
+        "科学": {
+          "rank": 1,
+          "professions": []
+        },
+        "动物沟通": {
+          "rank": 0,
+          "professions": []
+        },
+        "感受": {
+          "rank": 0,
+          "professions": []
+        },
+        "胁迫": {
+          "rank": 0,
+          "professions": []
+        },
+        "交际": {
+          "rank": 0,
+          "professions": []
+        },
+        "掩饰": {
+          "rank": 0,
+          "professions": []
+        }
+      },
+      "subskills": [],
+      "volume": 5
+    },
+    "entries": [
+      {
+        "id": "e_fcef06qv",
+        "category": "改造",
+        "name": "膜质虫羽",
+        "rank": "D",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_4lxsk5ey",
+            "enabled": true,
+            "type": "内在",
+            "kind": "derived",
+            "stackMode": "obtain",
+            "value": 30,
+            "applies": [
+              "allChecks"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "speed",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_36k2fea1",
+        "category": "改造",
+        "name": "异虫攻击等级提升",
+        "rank": "D",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_q9ujdnui",
+            "enabled": true,
+            "type": "内在",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 6,
+            "applies": [
+              "allAttacks"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_jmmwndji",
+        "category": "改造",
+        "name": "异虫甲壳等级提升",
+        "rank": "D",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_p7sfryaw",
+            "enabled": true,
+            "type": "内在",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 6,
+            "applies": [
+              "defense"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_1lc9le73",
+        "category": "改造",
+        "name": "虫族基因",
+        "rank": "D",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_l0x7ga0x",
+            "enabled": true,
+            "type": "内在",
+            "kind": "derived",
+            "stackMode": "obtain",
+            "value": 10,
+            "applies": [
+              "allChecks"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_2fkhmndp",
+        "category": "专长",
+        "name": "幸运星",
+        "rank": "3",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_jsblpmcv",
+            "enabled": true,
+            "type": "幸运",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 2,
+            "applies": [
+              "allChecks",
+              "defense"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_gmwcyf4n",
+        "category": "专长",
+        "name": "双武器战斗",
+        "rank": "1",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_ji8gzojo",
+            "enabled": true,
+            "type": "专长",
+            "kind": "defense",
+            "stackMode": "obtain",
+            "value": 3,
+            "applies": [
+              "defense"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "block",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_nqz04uj5",
+        "category": "物品",
+        "name": "加速手套",
+        "rank": "",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_sfqxwttz",
+            "enabled": true,
+            "type": "增强",
+            "kind": "checkDp",
+            "stackMode": "obtain",
+            "value": 3,
+            "applies": [
+              "allAttacks"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "other",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_1cgojd8p",
+        "category": "物品",
+        "name": "UNSC陆战队护甲",
+        "rank": "",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_su1310u9",
+            "enabled": true,
+            "type": "器械",
+            "kind": "defense",
+            "stackMode": "obtain",
+            "value": 4,
+            "applies": [
+              "defense"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "armor",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      },
+      {
+        "id": "e_hacrdd91",
+        "category": "物品",
+        "name": "守护戒指",
+        "rank": "",
+        "essence": "无",
+        "treeId": "",
+        "enabled": true,
+        "notes": "",
+        "bonuses": [
+          {
+            "id": "b_5ct6qymo",
+            "enabled": true,
+            "type": "器械",
+            "kind": "defense",
+            "stackMode": "increase",
+            "value": 2,
+            "applies": [
+              "allChecks"
+            ],
+            "attr": "感知",
+            "skill": "运动",
+            "derived": "hp",
+            "defensePart": "armor",
+            "note": "",
+            "consume": "",
+            "conditional": false,
+            "miscType": "",
+            "miscText": "",
+            "valueMode": "fixed",
+            "valueSrc": "attr",
+            "valueAttr": "风度",
+            "valueSkill": "",
+            "valueMult": 1,
+            "capMode": "none",
+            "capAttr": "风度",
+            "capMult": 3,
+            "capValue": 0,
+            "replaceFrom": "决心",
+            "replaceTo": "感知",
+            "energyPart": "cap",
+            "energyName": ""
+          }
+        ],
+        "levelValue": ""
+      }
+    ],
+    "attacks": [
+      {
+        "id": "atk_lzsfx21b",
+        "enabled": true,
+        "name": "爪击",
+        "attackType": "melee",
+        "attr": "力量",
+        "skill": "白刃",
+        "profession": "爪",
+        "weaponDamage": 5,
+        "weaponSize": 0,
+        "strReq": 0,
+        "range": 0,
+        "damageType": "挥砍",
+        "notes": "破甲4，8加骰"
+      }
+    ],
+    "checks": [],
+    "energyPools": [],
+    "power": {
+      "d": 0,
+      "c": 0,
+      "b": 0,
+      "a": 0,
+      "s": 0,
+      "ss": 0,
+      "points": 0,
+      "xp": 0
+    }
+  }
+}
