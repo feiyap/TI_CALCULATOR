@@ -1,6 +1,6 @@
 {
   "name": "南莉央 第二场",
-  "savedAt": "2026-09-03T00:51:04",
+  "savedAt": "2026-11-17T01:08:29",
   "character": {
     "version": 1,
     "info": {
@@ -19,15 +19,15 @@
     },
     "white": {
       "attrs": {
-        "力量": 3,
+        "力量": 6,
         "敏捷": 3,
         "耐力": 3,
         "智力": 2,
         "感知": 3,
         "决心": 2,
-        "风度": 4,
+        "风度": 2,
         "操控": 2,
-        "沉着": 4
+        "沉着": 2
       },
       "skills": {
         "运动": {
@@ -118,16 +118,7 @@
           "professions": []
         }
       },
-      "subskills": [
-        {
-          "parent": "表达",
-          "name": "神乐",
-          "rank": 3,
-          "professions": [
-            "神乐"
-          ]
-        }
-      ],
+      "subskills": [],
       "volume": 5
     },
     "checks": [
@@ -139,16 +130,6 @@
         "attr2": "",
         "skill": "调查",
         "profession": "聆听",
-        "contest": "竞争"
-      },
-      {
-        "id": "chk_eund5pbe",
-        "enabled": true,
-        "name": "八乙女之舞",
-        "attr": "风度",
-        "attr2": "",
-        "skill": "表达-神乐",
-        "profession": "神乐",
         "contest": "竞争"
       }
     ],
@@ -465,7 +446,7 @@
           },
           {
             "id": "b11",
-            "enabled": true,
+            "enabled": false,
             "type": "洞察",
             "kind": "checkDp",
             "stackMode": "obtain",
@@ -485,7 +466,7 @@
           },
           {
             "id": "b12",
-            "enabled": true,
+            "enabled": false,
             "type": "无名",
             "kind": "extraSuccess",
             "stackMode": "obtain",
@@ -517,7 +498,7 @@
         "bonuses": [
           {
             "id": "b13",
-            "enabled": false,
+            "enabled": true,
             "type": "盔甲防御",
             "kind": "defense",
             "stackMode": "obtain",
@@ -595,9 +576,10 @@
         "rank": "",
         "essence": "自然",
         "treeId": "",
-        "enabled": true,
+        "enabled": false,
         "notes": "伤害 3L，专业：弓，穿刺，体积 3，基本射程 40 米。已写入攻击预设。",
-        "bonuses": []
+        "bonuses": [],
+        "levelValue": ""
       },
       {
         "id": "e_td9hlx13",
@@ -606,7 +588,7 @@
         "rank": "D",
         "essence": "无",
         "treeId": "",
-        "enabled": true,
+        "enabled": false,
         "notes": "",
         "bonuses": [
           {
@@ -623,61 +605,6 @@
               "check:willSave",
               "check:reflex",
               "check:fortitude"
-            ],
-            "attr": "感知",
-            "skill": "运动",
-            "derived": "hp",
-            "defensePart": "other",
-            "note": "",
-            "consume": "",
-            "conditional": false,
-            "miscType": "",
-            "miscText": "",
-            "valueMode": "fixed"
-          }
-        ],
-        "levelValue": ""
-      },
-      {
-        "id": "e_lvkapcu1",
-        "category": "技艺",
-        "name": "诸域强化（风度）",
-        "rank": "D",
-        "essence": "无",
-        "treeId": "",
-        "enabled": true,
-        "notes": "",
-        "bonuses": [
-          {
-            "id": "b_uqtziq8p",
-            "enabled": true,
-            "type": "修行",
-            "kind": "attr",
-            "stackMode": "obtain",
-            "value": 2,
-            "applies": [
-              "allChecks"
-            ],
-            "attr": "风度",
-            "skill": "运动",
-            "derived": "hp",
-            "defensePart": "other",
-            "note": "",
-            "consume": "",
-            "conditional": false,
-            "miscType": "",
-            "miscText": "",
-            "valueMode": "fixed"
-          },
-          {
-            "id": "b_ul6bel46",
-            "enabled": true,
-            "type": "修行",
-            "kind": "checkDp",
-            "stackMode": "obtain",
-            "value": 4,
-            "applies": [
-              "attr:风度"
             ],
             "attr": "感知",
             "skill": "运动",
@@ -744,40 +671,6 @@
             "miscText": ""
           }
         ]
-      },
-      {
-        "id": "e_b3pm6uan",
-        "category": "物品",
-        "name": "安定情绪之戒",
-        "rank": "",
-        "essence": "无",
-        "treeId": "",
-        "enabled": true,
-        "notes": "",
-        "bonuses": [
-          {
-            "id": "b_x3pza9qn",
-            "enabled": true,
-            "type": "器械",
-            "kind": "attr",
-            "stackMode": "obtain",
-            "value": 2,
-            "applies": [
-              "allChecks"
-            ],
-            "attr": "沉着",
-            "skill": "运动",
-            "derived": "hp",
-            "defensePart": "other",
-            "note": "",
-            "consume": "",
-            "conditional": false,
-            "miscType": "",
-            "miscText": "",
-            "valueMode": "fixed"
-          }
-        ],
-        "levelValue": ""
       },
       {
         "id": "e_2u9eho7q",
@@ -892,40 +785,40 @@
         "levelValue": ""
       },
       {
-        "id": "e_8vtb15pr",
-        "category": "能力组",
-        "name": "巫女",
-        "rank": "D",
-        "essence": "无",
+        "id": "e_8cyvi3ws",
+        "category": "物品",
+        "name": "树精灵之弓",
+        "rank": "",
+        "essence": "魔幻",
         "treeId": "",
         "enabled": true,
         "notes": "",
         "bonuses": [
           {
-            "id": "b_3l49llxk",
+            "id": "b_pq0ugz35",
             "enabled": true,
-            "type": "神圣",
-            "kind": "defense",
+            "type": "增强",
+            "kind": "checkDp",
             "stackMode": "obtain",
-            "value": 1,
+            "value": 12,
             "applies": [
-              "allChecks"
+              "allAttacks"
             ],
             "attr": "感知",
             "skill": "运动",
             "derived": "hp",
             "defensePart": "other",
-            "note": "",
+            "note": "高速8，破甲8",
             "consume": "",
             "conditional": false,
             "miscType": "",
             "miscText": "",
-            "valueMode": "formula",
+            "valueMode": "fixed",
             "valueSrc": "attr",
             "valueAttr": "风度",
             "valueSkill": "",
             "valueMult": 1,
-            "capMode": "entryLevel",
+            "capMode": "none",
             "capAttr": "风度",
             "capMult": 3,
             "capValue": 0,
@@ -947,10 +840,10 @@
         "attr": "感知",
         "skill": "运动",
         "profession": "弓箭攻击",
-        "weaponDamage": 3,
-        "weaponSize": 3,
-        "strReq": 3,
-        "range": 40,
+        "weaponDamage": 10,
+        "weaponSize": 6,
+        "strReq": 6,
+        "range": 150,
         "damageType": "穿刺 / 严重",
         "notes": "禅宗射手：以感知取代敏捷。"
       }
@@ -958,30 +851,13 @@
     "power": {
       "d": 3,
       "c": 1,
-      "b": 0,
+      "b": 1,
       "a": 0,
       "s": 0,
       "ss": 0,
-      "points": 4700,
-      "xp": 12
+      "points": 12400,
+      "xp": 42
     },
-    "energyPools": [
-      {
-        "id": "pool_7q9tmb6y",
-        "enabled": true,
-        "name": "灵力",
-        "template": "spirit",
-        "category": "generic",
-        "attr1": "决心",
-        "attr2": "沉着",
-        "divisor": 4,
-        "extraOpenings": 0,
-        "enhanceRank": "",
-        "bonusCap": 0,
-        "bonusHourly": 0,
-        "bonusRest8": 0,
-        "notes": "消耗称灵感疲劳。长休息回复关键属性较低者。"
-      }
-    ]
+    "energyPools": []
   }
 }
