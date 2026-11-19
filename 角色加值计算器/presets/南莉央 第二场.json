@@ -1,6 +1,6 @@
 {
   "name": "南莉央 第二场",
-  "savedAt": "2026-11-17T01:08:29",
+  "savedAt": "2026-11-19T15:03:35",
   "character": {
     "version": 1,
     "info": {
@@ -88,8 +88,11 @@
           "professions": []
         },
         "神秘学": {
-          "rank": 0,
-          "professions": []
+          "rank": 1,
+          "professions": [
+            "塑能",
+            "咒法"
+          ]
         },
         "科学": {
           "rank": 1,
@@ -849,15 +852,32 @@
       }
     ],
     "power": {
-      "d": 3,
-      "c": 1,
-      "b": 1,
+      "d": 13,
+      "c": 0,
+      "b": 0,
       "a": 0,
       "s": 0,
       "ss": 0,
-      "points": 12400,
-      "xp": 42
+      "points": 12200,
+      "xp": 27
     },
-    "energyPools": []
+    "energyPools": [
+      {
+        "id": "pool_fs1ehwat",
+        "enabled": true,
+        "name": "魔力",
+        "template": "manaMind",
+        "category": "generic",
+        "attr1": "智力",
+        "attr2": "感知",
+        "divisor": 4,
+        "extraOpenings": 0,
+        "enhanceRank": "",
+        "bonusCap": 5,
+        "bonusHourly": 0,
+        "bonusRest8": 0,
+        "notes": "长休息回满。冥想每小时回复关键属性传奇之和。"
+      }
+    ]
   }
 }
